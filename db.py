@@ -42,6 +42,9 @@ class Database(object):
         uri = 'sqlite:///rss_downloader.db'
 
         self.engine = create_engine(uri, echo=True)
+
+        Base.metadata.create_all(self.engine)
+
         Session.configure(bind=self.engine)
         
         self.session = Session()
