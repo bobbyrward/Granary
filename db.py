@@ -8,7 +8,7 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import exc
+from sqlalchemy import exc
 
 from configmanager import CONFIG
 
@@ -57,7 +57,8 @@ class Database(object):
         self.session.add(torrent)
         try:
             self.session.commit()
-        except exc.FlushError:
+        except exc.SQLAlchemyError:
+            self.session.rollback()
             return False
 
         return True
