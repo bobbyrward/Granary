@@ -56,7 +56,6 @@ class RssDownloaderApp(wx.App):
     def OnInit(self):
         self.feed = feed.Feed(config.FEED_URL)
         self.downloader = downloader.TorrentDownloader()
-        self.matches = defaultdict(list)
 
         self.db = db.Database()
         self.db.connect()
@@ -66,18 +65,24 @@ class RssDownloaderApp(wx.App):
         # For debugging
         self.SetAssertMode(wx.PYAPP_ASSERT_DIALOG)
 
-        # Force an update at load time
-        #self.download_items()
+        self.mainwindow = MainWindow()
 
-        mainwindow = MainWindow()
+        # Force an update at load time
+        self.download_items()
 
         return True
 
     def download_items(self):
-        self.find_matches()
-        self.download_matches()
+        """Download all matches entries"""
 
-    def check_feed_entry(self, entry):
+        matches = self.find_matches()
+
+        for regexp, matches in matches.iteritems():
+            for entry in matches:
+                # Download the torrent
+                self.download_torrent(entry)
+
+    def check_feed_entry(self, entry, matches):
         """Check a feed entry for a match against MATCH_TORRENTS"""
 
         for match_regexp in config.MATCH_TORRENTS:
@@ -96,7 +101,7 @@ class RssDownloaderApp(wx.App):
                     return False
 
                 # If it matches a regular expression, add it to matches under that regular expression
-                self.matches[match_regexp].append(entry)
+                matches[match_regexp].append(entry)
                 return True
 
         # no match
@@ -105,9 +110,13 @@ class RssDownloaderApp(wx.App):
     def find_matches(self):
         """Find all entries that match a regular expression in MATCH_TORRENTS"""
 
+        matches = defaultdict(list)
+
         for entry in self.feed.get_entries():
             # check each entry
-            self.check_feed_entry(entry)
+            self.check_feed_entry(entry, matches)
+
+        return matches
 
     def download_torrent(self, entry):
         torrent = self.downloader.download(entry['link'])
@@ -121,13 +130,7 @@ class RssDownloaderApp(wx.App):
 
         print 'Downloaded "%s"' % entry['title']
 
-    def download_matches(self):
-        """Download all matches entries"""
-
-        for regexp, matches in self.matches.iteritems():
-            for entry in matches:
-                # Download the torrent
-                self.download_torrent(entry)
+        self.mainwindow.history.NewTorrentDownloaded(db_torrent)
 
 
 if __name__ == '__main__':

@@ -52,6 +52,10 @@ class HistoryWindow(wx.Frame):
         self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
         #self.list.resizeLastColumn(128)
 
+    def NewTorrentDownloaded(self, torrent):
+        self.list.InsertStringItem(0, torrent.name)
+        self.list.SetStringItem(0, 1, torrent.downloaded.strftime('%m/%d/%Y %I:%M %p'))
+        self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
 
     def OnCloseWindow(self, evt):
         self.Hide()
