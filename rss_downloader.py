@@ -6,6 +6,7 @@ from collections import defaultdict
 import config
 import feed
 import downloader
+import db
 
 
 class RssDownloader(object):
@@ -13,6 +14,7 @@ class RssDownloader(object):
         self.feed = feed.Feed(config.FEED_URL)
         self.downloader = downloader.TorrentDownloader()
         self.matches = defaultdict(list)
+        self.db = db.Database()
 
     def check_feed_entry(self, entry):
         """Check a feed entry for a match against MATCH_TORRENTS"""
@@ -20,7 +22,15 @@ class RssDownloader(object):
         for match_regexp in config.MATCH_TORRENTS:
             match = re.match(match_regexp, entry['title'])
 
+            # If it matches a regular expression, 
             if match:
+                # check if it was already downloaded
+                results = self.db.query_torrents().filter_by(name=entry['title'])
+
+                if results:
+                    print 'Already Downloaded "%s"' % entry['title']
+                    return False
+
                 # If it matches a regular expression, add it to matches under that regular expression
                 self.matches[match_regexp].append(entry)
                 return True
@@ -40,6 +50,11 @@ class RssDownloader(object):
         path = os.path.join(config.DOWNLOAD_DIRECTORY, entry['title'] + '.torrent')
         torrent.write_to(path)
 
+        db_torrent = db.Torrent(entry['title'])
+        self.db.save_torrent(db_torrent)
+
+        print 'Downloaded "%s"' % entry['title']
+
     def download_matches(self):
         """Download all matches entries"""
 
@@ -49,10 +64,10 @@ class RssDownloader(object):
                 self.download_torrent(entry)
 
     def run(self, args):
+        self.db.connect()
+
         self.find_matches()
         self.download_matches()
-
-
 
 
 if __name__ == '__main__':
