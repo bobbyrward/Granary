@@ -6,6 +6,7 @@ from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import DateTime
+from sqlalchemy import Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import exc
@@ -21,13 +22,17 @@ class Torrent(Base):
     __tablename__ = 'torrents'
 
     name = Column(String, primary_key=True)
-    downloaded = Column(DateTime)
+    download_link = Column(String)
+    first_seen = Column(DateTime)
+    downloaded = Column(Boolean)
 
-    def __init__(self, name, downloaded=None):
-        if not downloaded:
-            downloaded = datetime.now()
+    def __init__(self, name, link, first_seen=None, downloaded=False):
+        if not first_seen:
+            first_seen = datetime.now()
 
         self.name = name
+        self.download_link = link
+        self.first_seen =  first_seen
         self.downloaded = downloaded
 
 
@@ -64,14 +69,13 @@ class Database(object):
         return True
 
 
-
 if __name__ == '__main__':
     db = Database()
     db.connect()
 
     results = db.query_torrents().filter(Torrent.name.like('Sons.of.Anarchy.%')).all()
 
-    new_torrent = Torrent('Sons.of.Anarchy.S04E12.Burnt.and.Purged.Away.HDTV.XviD-FQM', datetime.now())
+    new_torrent = Torrent('Sons.of.Anarchy.S04E12.Burnt.and.Purged.Away.HDTV.XviD-FQM', '', datetime.now())
 
     if db.save_torrent(new_torrent):
         print 'Saved successfully'

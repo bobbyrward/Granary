@@ -39,22 +39,21 @@ class HistoryWindow(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
 
-    def Refresh(self):
-        torrents = wx.GetApp().db.query_torrents().order_by(
+        torrents = wx.GetApp().db.query_torrents().filter_by(downloaded=True).order_by(
                 db.Torrent.downloaded.desc()).all()
 
         self.list.DeleteAllItems()
 
         for idx, downloaded in enumerate(torrents):
             self.list.InsertStringItem(idx, downloaded.name)
-            self.list.SetStringItem(idx, 1, downloaded.downloaded.strftime('%m/%d/%Y %I:%M %p'))
+            self.list.SetStringItem(idx, 1, downloaded.first_seen.strftime('%m/%d/%Y %I:%M %p'))
 
         self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
         #self.list.resizeLastColumn(128)
 
     def NewTorrentDownloaded(self, torrent):
         self.list.InsertStringItem(0, torrent.name)
-        self.list.SetStringItem(0, 1, torrent.downloaded.strftime('%m/%d/%Y %I:%M %p'))
+        self.list.SetStringItem(0, 1, torrent.first_seen.strftime('%m/%d/%Y %I:%M %p'))
         self.list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
 
     def OnCloseWindow(self, evt):

@@ -2,7 +2,8 @@ import wx
 
 
 class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
-    TBMENU_HISTORY = wx.NewId()
+    TBMENU_DOWNLOAD_HISTORY = wx.NewId()
+    TBMENU_FEED_HISTORY = wx.NewId()
     TBMENU_CLOSE   = wx.NewId()
     
     def __init__(self, frame):
@@ -16,8 +17,9 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
         self.imgidx = 1
         
         # bind some events
-        self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarShowHistory)
-        self.Bind(wx.EVT_MENU, self.OnTaskBarShowHistory, id=self.TBMENU_HISTORY)
+        self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarToggleDownloadHistory)
+        self.Bind(wx.EVT_MENU, self.OnTaskBarShowFeedHistory, id=self.TBMENU_FEED_HISTORY)
+        self.Bind(wx.EVT_MENU, self.OnTaskBarShowDownloadHistory, id=self.TBMENU_DOWNLOAD_HISTORY)
         self.Bind(wx.EVT_MENU, self.OnTaskBarClose, id=self.TBMENU_CLOSE)
 
     def CreatePopupMenu(self):
@@ -28,7 +30,8 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
         the base class takes care of the rest.
         """
         menu = wx.Menu()
-        menu.Append(self.TBMENU_HISTORY, "Show &History")
+        menu.Append(self.TBMENU_DOWNLOAD_HISTORY, "Show &Download History")
+        menu.Append(self.TBMENU_FEED_HISTORY, "Show &Feed History")
         menu.AppendSeparator()
         menu.Append(self.TBMENU_CLOSE,   "E&xit")
         return menu
@@ -49,8 +52,14 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
     def OnTaskBarClose(self, evt):
         wx.CallAfter(self.frame.Close)
 
-    def OnTaskBarShowHistory(self, evt):
-        wx.CallAfter(self.frame.ShowHistory)
+    def OnTaskBarShowFeedHistory(self, evt):
+        wx.CallAfter(self.frame.ShowFeedHistory)
+
+    def OnTaskBarShowDownloadHistory(self, evt):
+        wx.CallAfter(self.frame.ShowDownloadHistory)
+
+    def OnTaskBarToggleDownloadHistory(self, evt):
+        wx.CallAfter(self.frame.ToggleDownloadHistory)
 
 
 

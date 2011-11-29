@@ -3,12 +3,14 @@ import os
 from collections import defaultdict
 
 import wx
+from sqlalchemy.orm.exc import NoResultFound
 
 import config
 import feed
 import downloader
 import db
 import historywin
+import feed_history
 import taskbar
 
 
@@ -27,6 +29,7 @@ class MainWindow(wx.Frame):
             self.tbicon = None
 
         self.history = historywin.HistoryWindow(self)
+        self.feed_history = feed_history.FeedHistoryWindow(self)
         self.timer = wx.Timer(self)
         self.timer.Start(1000 * 60)
 
@@ -37,9 +40,19 @@ class MainWindow(wx.Frame):
         #print "Updating"
         wx.GetApp().download_items()
             
-    def ShowHistory(self):
+    def ShowDownloadHistory(self):
         self.history.Refresh()
         self.history.Show()
+
+    def ToggleDownloadHistory(self):
+        if self.history.IsShown():
+            self.history.Hide()
+        else:
+            self.ShowFeedHistory()
+
+    def ShowFeedHistory(self):
+        self.feed_history.Refresh()
+        self.feed_history.Show()
 
     def OnCloseWindow(self, event):
         self.timer.Stop()
@@ -50,6 +63,12 @@ class MainWindow(wx.Frame):
             self.tbicon = None
 
         self.Destroy()
+
+    def NewTorrentDownloaded(self, found):
+        self.history.NewTorrentDownloaded(found)
+
+    def NewTorrentSeen(self, seen):
+        self.feed_history.NewTorrentSeen(seen)
 
 
 class RssDownloaderApp(wx.App):
@@ -92,14 +111,6 @@ class RssDownloaderApp(wx.App):
             if match:
                 #print "Match: %s" % entry['title']
 
-                # check if it was already downloaded
-                results = self.db.query_torrents().filter_by(name=entry['title']).count()
-
-                if results != 0:
-                    #print 'Already Downloaded "%s"' % entry['title']
-                    #print 'Results = ', results
-                    return False
-
                 # If it matches a regular expression, add it to matches under that regular expression
                 matches[match_regexp].append(entry)
                 return True
@@ -107,14 +118,33 @@ class RssDownloaderApp(wx.App):
         # no match
         return False
 
+    def add_entry_to_history(self, entry):
+        """Add feed to database for historical purposes
+
+        Returns True if this is the first time the entry was seen
+        """
+
+        try:
+            found = self.db.query_torrents().filter_by(name=entry['title']).one()
+        except NoResultFound:
+            return False
+
+        db_entry = db.Torrent(entry['title'], entry['link'])
+
+        if not self.db.save_torrent(db_entry):
+            print 'ERROR: Unable to commit feed entry name %s' % entry['title']
+
+        self.mainwindow.NewTorrentSeen(found)
+
     def find_matches(self):
         """Find all entries that match a regular expression in MATCH_TORRENTS"""
 
         matches = defaultdict(list)
 
         for entry in self.feed.get_entries():
-            # check each entry
-            self.check_feed_entry(entry, matches)
+            # check each new entry
+            if self.add_entry_to_history(entry):
+                self.check_feed_entry(entry, matches)
 
         return matches
 
@@ -123,14 +153,19 @@ class RssDownloaderApp(wx.App):
         path = os.path.join(config.DOWNLOAD_DIRECTORY, entry['title'] + '.torrent')
         torrent.write_to(path)
 
-        db_torrent = db.Torrent(entry['title'])
+        try:
+            found = self.db.query_torrents().filter_by(name=entry['title']).one()
+        except NoResultFound:
+            print "ERROR: Torrent downloaded but not already in database. (%s)" % entry['title']
 
-        if not self.db.save_torrent(db_torrent):
+        found.downloaded = True 
+
+        if not self.db.save_torrent(found):
             print 'ERROR: Unable to commit torrent name %s' % entry['title']
 
         print 'Downloaded "%s"' % entry['title']
 
-        self.mainwindow.history.NewTorrentDownloaded(db_torrent)
+        self.mainwindow.NewTorrentDownloaded(found)
 
 
 if __name__ == '__main__':
