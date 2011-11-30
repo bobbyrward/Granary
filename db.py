@@ -46,7 +46,7 @@ class Database(object):
         #uri = 'sqlite:////%s' % self.db_file_path
         uri = 'sqlite:///rss_downloader.db'
 
-        self.engine = create_engine(uri, echo=True)
+        self.engine = create_engine(uri, echo=False)
 
         Base.metadata.create_all(self.engine)
 

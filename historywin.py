@@ -40,7 +40,7 @@ class HistoryWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
 
         torrents = wx.GetApp().db.query_torrents().filter_by(downloaded=True).order_by(
-                db.Torrent.downloaded.desc()).all()
+                db.Torrent.first_seen.desc()).all()
 
         self.list.DeleteAllItems()
 

@@ -1,11 +1,12 @@
 import re
+import sys
 import os
 from collections import defaultdict
 
 import wx
 from sqlalchemy.orm.exc import NoResultFound
 
-import config
+from configmanager import CONFIG
 import feed
 import downloader
 import db
@@ -41,7 +42,6 @@ class MainWindow(wx.Frame):
         wx.GetApp().download_items()
             
     def ShowDownloadHistory(self):
-        self.history.Refresh()
         self.history.Show()
 
     def ToggleDownloadHistory(self):
@@ -51,7 +51,6 @@ class MainWindow(wx.Frame):
             self.ShowFeedHistory()
 
     def ShowFeedHistory(self):
-        self.feed_history.Refresh()
         self.feed_history.Show()
 
     def OnCloseWindow(self, event):
@@ -65,6 +64,9 @@ class MainWindow(wx.Frame):
         self.Destroy()
 
     def NewTorrentDownloaded(self, found):
+        #TODO: Also need to update the feed history to add the downloaded icon to the relevant row
+
+        self.feed_history.UpdateTorrentDownloaded(found)
         self.history.NewTorrentDownloaded(found)
 
     def NewTorrentSeen(self, seen):
@@ -73,7 +75,6 @@ class MainWindow(wx.Frame):
 
 class RssDownloaderApp(wx.App):
     def OnInit(self):
-        self.feed = feed.Feed(config.FEED_URL)
         self.downloader = downloader.TorrentDownloader()
 
         self.db = db.Database()
@@ -99,18 +100,16 @@ class RssDownloaderApp(wx.App):
         for regexp, matches in matches.iteritems():
             for entry in matches:
                 # Download the torrent
-                self.download_torrent(entry)
+                self.download_torrent_entry(entry)
 
     def check_feed_entry(self, entry, matches):
         """Check a feed entry for a match against MATCH_TORRENTS"""
 
-        for match_regexp in config.MATCH_TORRENTS:
+        for match_regexp in CONFIG.get_key('MATCH_TORRENTS'):
             match = re.match(match_regexp, entry['title'])
 
             # If it matches a regular expression, 
             if match:
-                #print "Match: %s" % entry['title']
-
                 # If it matches a regular expression, add it to matches under that regular expression
                 matches[match_regexp].append(entry)
                 return True
@@ -127,49 +126,64 @@ class RssDownloaderApp(wx.App):
         try:
             found = self.db.query_torrents().filter_by(name=entry['title']).one()
         except NoResultFound:
+            db_entry = db.Torrent(entry['title'], entry['link'])
+
+            if not self.db.save_torrent(db_entry):
+                print 'ERROR: Unable to commit feed entry name %s' % entry['title']
+                sys.exit(1)
+
+            self.mainwindow.NewTorrentSeen(db_entry)
+            
+            return True
+        else:
             return False
 
-        db_entry = db.Torrent(entry['title'], entry['link'])
-
-        if not self.db.save_torrent(db_entry):
-            print 'ERROR: Unable to commit feed entry name %s' % entry['title']
-
-        self.mainwindow.NewTorrentSeen(found)
 
     def find_matches(self):
         """Find all entries that match a regular expression in MATCH_TORRENTS"""
 
         matches = defaultdict(list)
 
-        for entry in self.feed.get_entries():
-            # check each new entry
-            if self.add_entry_to_history(entry):
-                self.check_feed_entry(entry, matches)
+        for rss_feed_url in CONFIG.get_key('FEED_URLS'):
+            for entry in feed.get_rss_feed_entries(rss_feed_url):
+                # check each new entry
+                if self.add_entry_to_history(entry):
+                    print "NEW!: %s" % entry['title']
+                    self.check_feed_entry(entry, matches)
 
         return matches
 
-    def download_torrent(self, entry):
-        torrent = self.downloader.download(entry['link'])
-        path = os.path.join(config.DOWNLOAD_DIRECTORY, entry['title'] + '.torrent')
-        torrent.write_to(path)
-
+    def download_torrent(self, title, link):
         try:
-            found = self.db.query_torrents().filter_by(name=entry['title']).one()
+            found = self.db.query_torrents().filter_by(name=title).one()
         except NoResultFound:
-            print "ERROR: Torrent downloaded but not already in database. (%s)" % entry['title']
+            print "ERROR: Torrent downloaded but not already in database. (%s)" % title
+            sys.exit(1)
 
-        found.downloaded = True 
+        self.download_db_torrent(found)
 
-        if not self.db.save_torrent(found):
-            print 'ERROR: Unable to commit torrent name %s' % entry['title']
+    def download_db_torrent(self, torrent):
+        torrent_file = self.downloader.download(torrent.download_link)
+        path = os.path.join(CONFIG.get_key('DOWNLOAD_DIRECTORY'), torrent.name + '.torrent')
+        torrent_file.write_to(path)
 
-        print 'Downloaded "%s"' % entry['title']
+        torrent.downloaded = True 
 
-        self.mainwindow.NewTorrentDownloaded(found)
+        if not self.db.save_torrent(torrent):
+            print 'ERROR: Unable to commit torrent name %s' % torrent.name
+            sys.exit(1)
+
+        print 'Downloaded "%s"' % torrent.name
+
+        self.mainwindow.NewTorrentDownloaded(torrent)
+
+    def download_torrent_entry(self, entry):
+        self.download_torrent(entry['title'], entry['link'])
 
 
 if __name__ == '__main__':
     app = RssDownloaderApp(False)
     app.MainLoop()
+    #CONFIG.save()
 
 

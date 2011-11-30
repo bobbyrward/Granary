@@ -1,5 +1,17 @@
 import urllib2
 import feedparser
+import httplib
+
+
+def get_rss_feed_entries(url):
+    try:
+        rss_content = urllib2.urlopen(url)
+    except httplib.BadStatusLine, e:
+        print "%r: args='%s' line'%s'" % (e, e.args, e.line)
+        return []
+    else:
+        feed = feedparser.parse(rss_content.read())
+        return feed['entries']
 
 
 class Feed(object):

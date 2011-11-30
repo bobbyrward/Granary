@@ -1,6 +1,7 @@
 import wx
 import db
 import wx.lib.mixins.listctrl as listmix
+from hashlib import md5
 
 
 class FeedHistoryList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -18,6 +19,7 @@ class FeedHistoryList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         self.SetColumnWidth(1, wx.LIST_AUTOSIZE)
         self.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
+
 class FeedHistoryWindow(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, -1, "Rss Downloader Feed History", size = (700,768),
@@ -26,6 +28,7 @@ class FeedHistoryWindow(wx.Frame):
         img = wx.Image('16-rss-square.png', wx.BITMAP_TYPE_PNG)
         icon = wx.IconFromBitmap(img.ConvertToBitmap() )
         self.SetIcon(icon)
+        self.item_data = {}
 
         self.list = FeedHistoryList(self, -1, 
                 style=wx.LC_REPORT
@@ -50,7 +53,7 @@ class FeedHistoryWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
 
         torrents = wx.GetApp().db.query_torrents().order_by(
-                db.Torrent.downloaded.desc()).limit(500).all()
+                db.Torrent.first_seen.desc()).limit(500).all()
 
         self.list.DeleteAllItems()
 
@@ -60,17 +63,42 @@ class FeedHistoryWindow(wx.Frame):
             else:
                 self.list.InsertStringItem(idx, '')
 
+            id = wx.NewId()
+            self.item_data[id] = downloaded
+            self.list.SetItemData(idx, id)
+
             self.list.SetStringItem(idx, 1, downloaded.name)
             self.list.SetStringItem(idx, 2, downloaded.first_seen.strftime('%m/%d/%Y %I:%M %p'))
 
         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
         #self.list.resizeLastColumn(128)
 
+        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, self.list)
+
+    def OnItemActivated(self, evt):
+        try:
+            torrent = self.item_data[evt.GetData()]
+        except KeyError:
+            return
+
+        wx.GetApp().download_db_torrent(torrent)
+
+    def UpdateTorrentDownloaded(self, torrent):
+        reverse_dict = dict((y,x) for (x,y) in self.item_data.iteritems())
+
+        index = self.list.FindItemData(-1, reverse_dict[torrent])
+
+        self.list.SetItemImage(index, 0)
+
     def NewTorrentSeen(self, torrent):
         if torrent.downloaded:
             self.list.InsertImageItem(0, 0)
         else:
             self.list.InsertStringItem(0, '')
+
+        id = wx.NewId()
+        self.item_data[id] = torrent
+        self.list.SetItemData(0, id)
 
         self.list.SetStringItem(0, 1, torrent.name)
         self.list.SetStringItem(0, 2, torrent.first_seen.strftime('%m/%d/%Y %I:%M %p'))
