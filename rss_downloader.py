@@ -13,6 +13,7 @@ import db
 import historywin
 import feed_history
 import taskbar
+import optionsdlg
 
 
 class MainWindow(wx.Frame):
@@ -37,12 +38,20 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
         self.Bind(wx.EVT_TIMER, self.OnUpdateTimer, self.timer)
 
+    def ShowOptions(self):
+        dlg = optionsdlg.OptionsDialog(self)
+
+        if wx.ID_OK == dlg.ShowModal():
+            dlg.CommitChanges()
+            CONFIG.save()
+
     def OnUpdateTimer(self, evt):
         #print "Updating"
         wx.GetApp().download_items()
             
     def ShowDownloadHistory(self):
         self.history.Show()
+        self.history.Raise()
 
     def ToggleDownloadHistory(self):
         if self.history.IsShown():
@@ -52,6 +61,7 @@ class MainWindow(wx.Frame):
 
     def ShowFeedHistory(self):
         self.feed_history.Show()
+        self.feed_history.Raise()
 
     def OnCloseWindow(self, event):
         self.timer.Stop()
@@ -75,8 +85,6 @@ class MainWindow(wx.Frame):
 
 class RssDownloaderApp(wx.App):
     def OnInit(self):
-        self.downloader = downloader.TorrentDownloader()
-
         self.db = db.Database()
         self.db.connect()
 
@@ -163,15 +171,17 @@ class RssDownloaderApp(wx.App):
         self.download_db_torrent(found)
 
     def download_db_torrent(self, torrent):
-        torrent_file = self.downloader.download(torrent.download_link)
-        path = os.path.join(CONFIG.get_key('DOWNLOAD_DIRECTORY'), torrent.name + '.torrent')
-        torrent_file.write_to(path)
+        if torrent.downloaded:
+            # already downloaded
+            return
+
+        if not downloader.add_torrent_to_client(torrent.name, torrent.download_link):
+            print 'ERROR: Unable to commit torrent name %s' % torrent.name
+            sys.exit(1)
 
         torrent.downloaded = True 
 
-        if not self.db.save_torrent(torrent):
-            print 'ERROR: Unable to commit torrent name %s' % torrent.name
-            sys.exit(1)
+        self.db.save_torrent(torrent)
 
         print 'Downloaded "%s"' % torrent.name
 
@@ -180,10 +190,47 @@ class RssDownloaderApp(wx.App):
     def download_torrent_entry(self, entry):
         self.download_torrent(entry['title'], entry['link'])
 
+    def test_matches(self):
+        torrents = wx.GetApp().db.query_torrents().order_by(db.Torrent.first_seen.desc()).all()
+        downloaded_count = wx.GetApp().db.query_torrents().filter_by(downloaded=True).count()
+
+        matches = defaultdict(list)
+        found_list = []
+
+        for torrent in torrents:
+            entry = {'title': torrent.name, 'link': torrent.download_link}
+            self.check_feed_entry(entry, matches)
+
+        for key, entry_list in matches.iteritems():
+            for entry in entry_list:
+                try:
+                    found = self.db.query_torrents().filter_by(name=entry['title']).one()
+                except NoResultFound:
+                    continue
+                else:
+                    if found.downloaded == False:
+                        found_list.append(found)
+                        print found.name
+
+        if not found_list:
+            wx.MessageBox('Found no new matches', 'Test results', wx.OK|wx.ICON_INFORMATION)
+            return
+
+        message = 'Download the %d new matches?:\n\n' % len(found_list)
+        message += '\n'.join((x.name for x in found_list))
+    
+        result = wx.MessageBox(message, 'Test Results', wx.YES_NO|wx.ICON_QUESTION)
+        
+        if result == wx.YES:
+            for found in found_list:
+                # Download the torrent
+                self.download_db_torrent(found)
+
+
 
 if __name__ == '__main__':
     app = RssDownloaderApp(False)
     app.MainLoop()
-    #CONFIG.save()
+    CONFIG.save()
 
 
