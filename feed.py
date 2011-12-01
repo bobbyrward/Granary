@@ -17,7 +17,7 @@ def get_rss_feed_entries(url):
         return []
     else:
         feed = feedparser.parse(rss_content.read())
-        return feed['entries']
+        return reversed(feed['entries'])
 
 
 class Feed(object):
