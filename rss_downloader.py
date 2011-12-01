@@ -43,8 +43,23 @@ class MainWindow(wx.Frame):
         dlg = optionsdlg.OptionsDialog(self)
 
         if wx.ID_OK == dlg.ShowModal():
+            feed_count_pre = len(CONFIG.get_key('FEED_URLS'))
+            regexp_count_pre = len(CONFIG.get_key('MATCH_TORRENTS'))
             dlg.CommitChanges()
             CONFIG.save()
+            regexp_count_post = len(CONFIG.get_key('MATCH_TORRENTS'))
+            feed_count_post = len(CONFIG.get_key('FEED_URLS'))
+
+            if feed_count_pre < feed_count_post:
+                # update the history before going further
+                wx.GetApp().download_items()
+
+            if regexp_count_pre < regexp_count_post:
+                result = wx.MessageBox("Match Regexps have changed.  Would you like to run the updated list against the history and download any matches?", 
+                        "Test matches", wx.YES_NO|wx.ICON_QUESTION)
+
+                if result == wx.YES:
+                    wx.GetApp().test_matches()
 
             if CONFIG.get_key('ENABLE_GROWL'):
                 wx.GetApp().growler.register()

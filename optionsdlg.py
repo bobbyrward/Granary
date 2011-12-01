@@ -133,14 +133,6 @@ class OptionsDialog(wx.Dialog):
         CONFIG.set_key("FEED_URLS", self.rss_feed_list_editor.GetListItems())
         CONFIG.set_key("MATCH_TORRENTS", self.match_regexp_list_editor.GetListItems())
 
-        if self.match_regexp_list_editor.has_changes:
-            result = wx.MessageBox("Match Regexps have changed.  Would you like to run the updated list against the history and download any matches?", 
-                    "Test matches", wx.YES_NO|wx.ICON_QUESTION)
-
-            if result == wx.YES:
-                wx.GetApp().test_matches()
-                print 'testing matches'
-
 
 if __name__ == '__main__':
     app = wx.App(redirect=False)
