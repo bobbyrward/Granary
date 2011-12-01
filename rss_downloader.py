@@ -14,6 +14,7 @@ import historywin
 import feed_history
 import taskbar
 import optionsdlg
+import growler
 
 
 class MainWindow(wx.Frame):
@@ -44,6 +45,10 @@ class MainWindow(wx.Frame):
         if wx.ID_OK == dlg.ShowModal():
             dlg.CommitChanges()
             CONFIG.save()
+
+            if CONFIG.get_key('ENABLE_GROWL'):
+                self.growler.register()
+
 
     def OnUpdateTimer(self, evt):
         #print "Updating"
@@ -85,6 +90,7 @@ class MainWindow(wx.Frame):
 
 class RssDownloaderApp(wx.App):
     def OnInit(self):
+        self.growler = growler.Growler()
         self.db = db.Database()
         self.db.connect()
 
@@ -182,6 +188,9 @@ class RssDownloaderApp(wx.App):
         torrent.downloaded = True 
 
         self.db.save_torrent(torrent)
+
+        if CONFIG.get_key('ENABLE_GROWL'):
+            self.growler.send_download_notification(torrent)
 
         print 'Downloaded "%s"' % torrent.name
 

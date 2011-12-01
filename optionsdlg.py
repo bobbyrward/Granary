@@ -77,14 +77,30 @@ class IntegrationOptionsPanel(wx.Panel):
         CONFIG.set_key('DELUGE_WEB_UI_PASSWORD', self.webui_password.GetValue())
 
 
+class GrowlOptionsPanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent, -1)
+
+        self.enable_growl = wx.CheckBox(self, -1, "Enable Growl Support")
+        self.enable_growl.SetValue(CONFIG.get_key('ENABLE_GROWL'))
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.enable_growl, 0, wx.EXPAND|wx.ALL, 5)
+
+        self.SetSizer(sizer)
+
+    def CommitChanges(self):
+        CONFIG.set_key('ENABLE_GROWL', self.enable_growl.GetValue())
+
+
 class OptionsDialog(wx.Dialog):
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, "Rss Downloader Options", size=(700, 700))
 
         notebook = wx.Notebook(self, -1)
-        
-        self.general_panel = IntegrationOptionsPanel(notebook)
-        notebook.AddPage(self.general_panel, "Integration Method")
+
+        self.integration_panel = IntegrationOptionsPanel(notebook)
+        notebook.AddPage(self.integration_panel, "Integration Method")
 
         self.rss_feed_list_editor = ListEditorCtrl(notebook, "Feed URLs", CONFIG.get_key("FEED_URLS"), size=(500, 200))
         notebook.AddPage(self.rss_feed_list_editor, "Feed URLs")
@@ -92,6 +108,9 @@ class OptionsDialog(wx.Dialog):
         self.match_regexp_list_editor = ListEditorCtrl(notebook, "Match Regexps", CONFIG.get_key("MATCH_TORRENTS"))
         notebook.AddPage(self.match_regexp_list_editor, "Match Regexps")
 
+        self.growl_panel = GrowlOptionsPanel(notebook)
+        notebook.AddPage(self.growl_panel, "Growl")
+        
         okbutton = wx.Button(self, wx.ID_OK)
         okbutton.SetDefault()
 
@@ -109,7 +128,8 @@ class OptionsDialog(wx.Dialog):
         self.SetSizer(sizer)
 
     def CommitChanges(self):
-        self.general_panel.CommitChanges()
+        self.integration_panel.CommitChanges()
+        self.growl_panel.CommitChanges()
         CONFIG.set_key("FEED_URLS", self.rss_feed_list_editor.GetListItems())
         CONFIG.set_key("MATCH_TORRENTS", self.match_regexp_list_editor.GetListItems())
 

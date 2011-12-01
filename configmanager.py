@@ -17,6 +17,7 @@ class ConfigManager(object):
         self.default_options['DELUGE_WEB_UI_PASSWORD'] = 'deluge'
         self.default_options['DELUGE_WEB_UI_URL'] = 'http://localhost:8112'
         self.default_options['TORRENT_INTEGRATION_METHOD'] = 'WATCH_FOLDER'
+        self.default_options['ENABLE_GROWL'] = False
 
         if not os.path.exists(self.config_folder):
             os.mkdir(self.config_folder)
