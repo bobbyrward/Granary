@@ -47,8 +47,7 @@ class MainWindow(wx.Frame):
             CONFIG.save()
 
             if CONFIG.get_key('ENABLE_GROWL'):
-                self.growler.register()
-
+                wx.GetApp().growler.register()
 
     def OnUpdateTimer(self, evt):
         #print "Updating"
