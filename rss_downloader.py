@@ -134,7 +134,7 @@ class RssDownloaderApp(wx.App):
         """Check a feed entry for a match against MATCH_TORRENTS"""
 
         for match_regexp in CONFIG.get_key('MATCH_TORRENTS'):
-            match = re.match(match_regexp, entry['title'])
+            match = re.match(match_regexp, entry['title'], re.IGNORECASE)
 
             # If it matches a regular expression, 
             if match:
