@@ -31,10 +31,7 @@ class FeedHistoryWindow(wx.Frame):
                 size=(700, 768),
                 style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 
-        img = wx.GetApp().load_app_image('16-rss-square.png')
-        icon = wx.IconFromBitmap(img.ConvertToBitmap())
-
-        self.SetIcon(icon)
+        self.SetIcon(wx.GetApp().icon)
         self.item_data = {}
 
         self.list = FeedHistoryList(self, -1,
