@@ -11,12 +11,10 @@ from granary.ui import optionsdlg
 
 class MainWindow(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, -1, "Rss Downloader", size = (64,64),
-                          style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+        wx.Frame.__init__(self, None, -1, "Rss Downloader", size=(64, 64),
+                  style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 
-        img = wx.GetApp().load_app_image('16-rss-square.png')
-        icon = wx.IconFromBitmap(img.ConvertToBitmap() )
-        self.SetIcon(icon)
+        self.SetIcon(wx.GetApp().icon)
 
         try:
             self.tbicon = taskbar.RssDownloaderTaskBarIcon(self)
@@ -24,6 +22,7 @@ class MainWindow(wx.Frame):
             self.tbicon = None
 
         self.feed_history = feed_history.FeedHistoryWindow(self)
+
         self.timer = wx.Timer(self)
         self.timer.Start(1000 * 60)
 
@@ -36,26 +35,30 @@ class MainWindow(wx.Frame):
         if wx.ID_OK == dlg.ShowModal():
             feed_count_pre = len(config().get_key('FEED_URLS'))
             regexp_count_pre = len(config().get_key('MATCH_TORRENTS'))
+
             dlg.CommitChanges()
             config().save()
+
             regexp_count_post = len(config().get_key('MATCH_TORRENTS'))
             feed_count_post = len(config().get_key('FEED_URLS'))
 
             if feed_count_pre < feed_count_post:
                 # update the history before going further
-                wx.GetApp().download_items()
+                wx.GetApp().downloader.tick()
 
             if regexp_count_pre < regexp_count_post:
-                result = wx.MessageBox("Match Regexps have changed.  Would you like to run the updated list against the history and download any matches?", 
-                        "Test matches", wx.YES_NO|wx.ICON_QUESTION)
+                result = wx.MessageBox(
+                        "Match Regexps have changed.  " +
+                        "Would you like to run the updated list " +
+                        "against the history and download any matches?",
+                        "Test matches", wx.YES_NO | wx.ICON_QUESTION)
 
                 if result == wx.YES:
-                    wx.GetApp().test_matches()
+                    wx.GetApp().downloader.test_regular_expressions()
 
     def OnUpdateTimer(self, evt):
-        #print "Updating"
-        wx.GetApp().download_items()
-            
+        wx.GetApp().downloader.tick()
+
     def ToggleFeedistory(self):
         if self.feed_history.IsShown():
             self.feed_history.Hide()
@@ -81,5 +84,3 @@ class MainWindow(wx.Frame):
 
     def NewTorrentSeen(self, seen):
         self.feed_history.NewTorrentSeen(seen)
-
-

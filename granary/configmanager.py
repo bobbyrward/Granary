@@ -4,10 +4,15 @@ import imp
 import shutil
 import cPickle as pickle
 
+import wx
+
 
 class ConfigManager(object):
     def __init__(self):
-        self.config_folder = os.path.join(os.environ['LOCALAPPDATA'], 'rss_downloader')
+        self.std_paths = wx.StandardPaths_Get()
+
+        self.config_folder = self.std_paths.GetUserLocalDataDir()
+
         self.config = {}
 
         self.default_options = {}
@@ -22,8 +27,8 @@ class ConfigManager(object):
         if not os.path.exists(self.config_folder):
             os.mkdir(self.config_folder)
 
-        self.config_file_path = os.path.join(self.config_folder, 'rss_downloader.config')
-        #                = os.path.join(self.config_folder, 'config.py')
+        self.config_file_path = os.path.join(
+                self.config_folder, 'rss_downloader.config')
 
         try:
             with open(self.config_file_path, 'rb') as fd:
@@ -31,23 +36,26 @@ class ConfigManager(object):
         except IOError:
             self.load_defaults()
 
-
     def save(self):
         with open(self.config_file_path, 'wb') as fd:
             pickle.dump(self.config, fd)
 
     def load_defaults(self):
         try:
-            config_orig = imp.load_source('rss_downloader.config', os.path.join(self.config_folder, 'config.py'))
+            config_orig = imp.load_source('rss_downloader.config',
+                    os.path.join(self.config_folder, 'config.py'))
         except:
             self.config = self.default_options
         else:
-            self.config['FEED_URLS'] = config_orig.FEED_URLS
-            self.config['MATCH_TORRENTS'] = config_orig.MATCH_TORRENTS
-            self.config['DOWNLOAD_DIRECTORY'] = config_orig.DOWNLOAD_DIRECTORY
-            self.config['DELUGE_WEB_UI_PASSWORD'] = config_orig.DELUGE_WEB_UI_PASSWORD
-            self.config['DELUGE_WEB_UI_URL'] = config_orig.DELUGE_WEB_UI_URL
-            self.config['TORRENT_INTEGRATION_METHOD'] = config_orig.TORRENT_INTEGRATION_METHOD
+            def copy_config(key):
+                self.config[key] = getattr(config_orig, key)
+
+            copy_config('FEED_URLS')
+            copy_config('MATCH_TORRENTS')
+            copy_config('DOWNLOAD_DIRECTORY')
+            copy_config('DELUGE_WEB_UI_PASSWORD')
+            copy_config('DELUGE_WEB_UI_URL')
+            copy_config('TORRENT_INTEGRATION_METHOD')
 
     def set_key(self, key_name, key_value):
         self.config[key_name] = key_value
@@ -67,5 +75,3 @@ class ConfigManager(object):
 
 def config():
     return wx.GetApp().Config
-    
-

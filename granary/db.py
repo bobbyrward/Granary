@@ -31,7 +31,7 @@ class Torrent(Base):
 
         self.name = name
         self.download_link = link
-        self.first_seen =  first_seen
+        self.first_seen = first_seen
         self.downloaded = downloaded
 
 
@@ -41,7 +41,10 @@ class Database(object):
         self.session = None
 
         filename = 'rss_downloader.db'
-        self.db_file_path = os.path.join(config().get_config_path(), filename).replace('\\', '/')
+
+        self.db_file_path = os.path.join(
+                config().get_config_path(), filename)
+        self.db_file_path.replace('\\', '/')
 
         # backwards compatibility with old broken location
         if not os.path.exists(self.db_file_path):
@@ -56,7 +59,7 @@ class Database(object):
         Base.metadata.create_all(self.engine)
 
         Session.configure(bind=self.engine)
-        
+
         self.session = Session()
         self.session.commit()
 
@@ -73,14 +76,23 @@ class Database(object):
 
         return True
 
+    def set_torrent_downloaded(self, torrent):
+        torrent.downloaded = True
+        self.save_torent(torrent)
+
 
 if __name__ == '__main__':
     db = Database()
     db.connect()
 
-    results = db.query_torrents().filter(Torrent.name.like('Sons.of.Anarchy.%')).all()
+    results = db.query_torrents().filter(
+            Torrent.name.like('Sons.of.Anarchy.%')).all()
 
-    new_torrent = Torrent('Sons.of.Anarchy.S04E12.Burnt.and.Purged.Away.HDTV.XviD-FQM', '', datetime.now())
+    new_torrent = Torrent(
+            'Sons.of.Anarchy.S04E12.Burnt.and.Purged.Away.HDTV.XviD-FQM',
+            '',
+            datetime.now()
+            )
 
     if db.save_torrent(new_torrent):
         print 'Saved successfully'
@@ -88,10 +100,3 @@ if __name__ == '__main__':
         print 'Error saving torrent'
 
     print results
-
-
-
-
-
-
-

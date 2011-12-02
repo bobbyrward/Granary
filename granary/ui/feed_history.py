@@ -7,7 +7,9 @@ from granary import db
 
 
 class FeedHistoryList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
-    def __init__(self, parent, ID, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+    def __init__(self, parent, ID, pos=wx.DefaultPosition,
+            size=wx.DefaultSize, style=0):
+
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
@@ -24,8 +26,10 @@ class FeedHistoryList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
 
 class FeedHistoryWindow(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, "Rss Downloader Feed History", size = (700,768),
-                          style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+        wx.Frame.__init__(self, parent, -1,
+                "Rss Downloader Feed History",
+                size=(700, 768),
+                style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 
         img = wx.GetApp().load_app_image('16-rss-square.png')
         icon = wx.IconFromBitmap(img.ConvertToBitmap())
@@ -33,12 +37,11 @@ class FeedHistoryWindow(wx.Frame):
         self.SetIcon(icon)
         self.item_data = {}
 
-        self.list = FeedHistoryList(self, -1, 
+        self.list = FeedHistoryList(self, -1,
                 style=wx.LC_REPORT
-                     |wx.BORDER_NONE
-                     #|wx.LC_VRULES
-                     |wx.LC_HRULES
-                     |wx.LC_SINGLE_SEL)
+                     | wx.BORDER_NONE
+                     | wx.LC_HRULES
+                     | wx.LC_SINGLE_SEL)
 
         self.image_list = wx.ImageList(16, 16)
 
@@ -71,7 +74,8 @@ class FeedHistoryWindow(wx.Frame):
             self.list.SetItemData(idx, id)
 
             self.list.SetStringItem(idx, 1, downloaded.name)
-            self.list.SetStringItem(idx, 2, downloaded.first_seen.strftime('%m/%d/%Y %I:%M %p'))
+            self.list.SetStringItem(idx, 2,
+                    downloaded.first_seen.strftime('%m/%d/%Y %I:%M %p'))
 
         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
         #self.list.resizeLastColumn(128)
@@ -87,7 +91,7 @@ class FeedHistoryWindow(wx.Frame):
         wx.GetApp().download_db_torrent(torrent)
 
     def UpdateTorrentDownloaded(self, torrent):
-        reverse_dict = dict((y,x) for (x,y) in self.item_data.iteritems())
+        reverse_dict = dict((y, x) for (x, y) in self.item_data.iteritems())
 
         index = self.list.FindItemData(-1, reverse_dict[torrent])
 
@@ -104,13 +108,10 @@ class FeedHistoryWindow(wx.Frame):
         self.list.SetItemData(0, id)
 
         self.list.SetStringItem(0, 1, torrent.name)
-        self.list.SetStringItem(0, 2, torrent.first_seen.strftime('%m/%d/%Y %I:%M %p'))
+        self.list.SetStringItem(0, 2,
+                torrent.first_seen.strftime('%m/%d/%Y %I:%M %p'))
 
         self.list.resizeLastColumn(128)
 
     def OnCloseWindow(self, evt):
         self.Hide()
-
-
-
-

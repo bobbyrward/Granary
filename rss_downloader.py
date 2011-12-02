@@ -4,18 +4,21 @@ import os
 from collections import defaultdict
 
 import wx
-from sqlalchemy.orm.exc import NoResultFound
 
-from granary.configmanager import ConfigManager, config
-from granary import feed
-from granary import downloader
 from granary import db
+from granary.configmanager import ConfigManager, config
 from granary.ui import mainwin
 from granary.integration import growler
+from granary.feeddownloader import FeedDownloader
 
 
 class RssDownloaderApp(wx.App):
     def OnInit(self):
+        self.SetAppName("rss_downloader")
+
+        # For debugging
+        self.SetAssertMode(wx.PYAPP_ASSERT_DIALOG)
+
         # initialize config before anything else
         self.Config = ConfigManager()
 
@@ -23,159 +26,33 @@ class RssDownloaderApp(wx.App):
         self.db = db.Database()
         self.db.connect()
 
-        self.SetAppName("Rss Downloader")
+        self.icon = wx.IconFromBitmap(self.load_app_image('16-rss-square.png').ConvertToBitmap())
 
-        # For debugging
-        self.SetAssertMode(wx.PYAPP_ASSERT_DIALOG)
+        self.downloader = FeedDownloader()
 
         self.mainwindow = mainwin.MainWindow()
 
         # Force an update at load time
-        self.download_items()
+        self.downloader.tick()
 
         return True
 
-    def download_items(self):
-        """Download all matches entries"""
+    def OnNewTorrentSeen(self, torrent):
+        # I like knowing when it sees new torrents.
+        # NOTE: should find a better way to do this and eliminate output where I can
+        print 'NEW: %s' % torrent.name
 
-        matches = self.find_matches()
+        self.mainwindow.NewTorrentSeen(torrent)
 
-        for regexp, matches in matches.iteritems():
-            for entry in matches:
-                # Download the torrent
-                self.download_torrent_entry(entry)
-
-    def check_feed_entry(self, entry, matches):
-        """Check a feed entry for a match against MATCH_TORRENTS"""
-
-        for match_regexp in config().get_key('MATCH_TORRENTS'):
-            match = re.match(match_regexp, entry['title'], re.IGNORECASE)
-
-            # If it matches a regular expression,
-            if match:
-                # If it matches a regular expression,
-                # add it to matches under that regular expression
-                matches[match_regexp].append(entry)
-                return True
-
-        # no match
-        return False
-
-    def add_entry_to_history(self, entry):
-        """Add feed to database for historical purposes
-
-        Returns True if this is the first time the entry was seen
-        """
-
-        try:
-            found = self.db.query_torrents().filter_by(
-                    name=entry['title']).one()
-        except NoResultFound:
-            db_entry = db.Torrent(entry['title'], entry['link'])
-
-            if not self.db.save_torrent(db_entry):
-                print 'ERROR: Unable to commit feed entry name %s' \
-                        % entry['title']
-                sys.exit(1)
-
-            self.mainwindow.NewTorrentSeen(db_entry)
-
-            return True
-        else:
-            return False
-
-    def find_matches(self):
-        """Find all entries that match a regular expression
-
-        Regular expressions are taken from MATCH_TORRENTS
-        Feeds are taken from FEED_URLS
-        """
-
-        matches = defaultdict(list)
-
-        for rss_feed_url in config().get_key('FEED_URLS'):
-            for entry in feed.get_rss_feed_entries(rss_feed_url):
-                # check each new entry
-                if self.add_entry_to_history(entry):
-                    print "NEW!: %s" % entry['title']
-                    self.check_feed_entry(entry, matches)
-
-        return matches
-
-    def download_torrent(self, title, link):
-        try:
-            found = self.db.query_torrents().filter_by(name=title).one()
-        except NoResultFound:
-            raise Exception(
-                "Torrent downloaded but not already in database. (%s)" \
-                    % title)
-
-        self.download_db_torrent(found)
-
-    def download_db_torrent(self, torrent):
-        if torrent.downloaded:
-            # already downloaded
-            return
-
-        add_success = downloader.add_torrent_to_client(
-                torrent.name, torrent.download_link)
-
-        if not add_success:
-            raise Exception('ERROR: Unable to commit torrent name %s' \
-                    % torrent.name)
-
-        torrent.downloaded = True
-
-        self.db.save_torrent(torrent)
-
+    def OnTorrentDownloaded(self, torrent):
+        # send the growl notification if enabled
         if config().get_key('ENABLE_GROWL'):
             self.growler.send_download_notification(torrent)
 
-        print 'Downloaded "%s"' % torrent.name
+        #print 'Downloaded "%s"' % torrent.name
 
+        # let the main window know about the torrent
         self.mainwindow.NewTorrentDownloaded(torrent)
-
-    def download_torrent_entry(self, entry):
-        self.download_torrent(entry['title'], entry['link'])
-
-    def test_matches(self):
-        query = wx.GetApp().db.query_torrents()
-        torrents = query.order_by(db.Torrent.first_seen.desc()).all()
-
-        downloaded_count = query.filter_by(downloaded=True).count()
-
-        matches = defaultdict(list)
-        found_list = []
-
-        for torrent in torrents:
-            entry = {'title': torrent.name, 'link': torrent.download_link}
-            self.check_feed_entry(entry, matches)
-
-        for key, entry_list in matches.iteritems():
-            for entry in entry_list:
-                try:
-                    found = query.filter_by(name=entry['title']).one()
-                except NoResultFound:
-                    continue
-                else:
-                    if found.downloaded == False:
-                        found_list.append(found)
-                        print found.name
-
-        if not found_list:
-            wx.MessageBox('Found no new matches', 'Test results',
-                    wx.OK | wx.ICON_INFORMATION)
-        else:
-            message = 'Download the %d new matches?:\n\n' % len(found_list)
-            message += '\n'.join((x.name for x in found_list))
-
-            result = wx.MessageBox(message, 'Test Results',
-                    wx.YES_NO | wx.ICON_QUESTION)
-
-            if result == wx.YES:
-                for found in found_list:
-                    # Download the torrent
-                    self.download_db_torrent(found)
 
     def load_app_image(self, filename):
         path = os.path.join(config().get_app_path(), 'res', filename)

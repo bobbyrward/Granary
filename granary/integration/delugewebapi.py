@@ -45,7 +45,8 @@ class DelugeWebUIClient(object):
 
         request = json.dumps(raw_args)
 
-        response, content = self.http.request(self.endpoint, 'POST', request, self.headers)
+        response, content = self.http.request(
+                self.endpoint, 'POST', request, self.headers)
 
         if response.status != 200:
             raise DelugeClientResponseError(response)
@@ -83,7 +84,7 @@ class DelugeWebUIClient(object):
 
 
 if __name__ == '__main__':
-    import pprint 
+    import pprint
     ENDPOINT = "http://localhost:8112/json"
     PASSWORD = 'deluge'
 
@@ -94,25 +95,28 @@ if __name__ == '__main__':
     pprint.pprint(client.login(PASSWORD))
     pprint.pprint(client.check_session())
 
-    result = client.download_torrent_from_url('http://sceneaccess.org/download/493206/ca742397c292573dfc6d127904a945d3/The.Daily.Show.2011.11.30.Bono.HDTV.XviD-FQM.torrent')
+    result = client.download_torrent_from_url('url here')
     pprint.pprint(result)
 
     file_path = result
 
     print 'getting config values'
     options = client.get_config_values(
-                'add_paused', 'compact_allocation', 'download_location',
-                'max_connections_per_torrent', 'max_download_speed_per_torrent',
-                'max_upload_speed_per_torrent', 'max_upload_slots_per_torrent',
+                'add_paused',
+                'compact_allocation',
+                'download_location',
+                'max_connections_per_torrent',
+                'max_download_speed_per_torrent',
+                'max_upload_speed_per_torrent',
+                'max_upload_slots_per_torrent',
                 'prioritize_first_last_pieces')
-    
+
     pprint.pprint(options)
 
-    torrent = { 
+    torrent = {
         'path': file_path,
         'options': options,
     }
 
     result = client.add_torrents(torrent)
     pprint.pprint(result)
-

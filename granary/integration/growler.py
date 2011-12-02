@@ -3,7 +3,7 @@ try:
     import gntp.notifier
 except ImportError:
     gntp = None
-    
+
 
 if gntp is None:
     class Growler(object):
@@ -15,23 +15,23 @@ if gntp is None:
 else:
     class Growler(object):
         def __init__(self):
+            self.title = "New Download"
             self.growl = gntp.notifier.GrowlNotifier(
-                applicationName = "Rss Downloader",
-                notifications = ["New Download"],
-                defaultNotifications = ["New Download"],
-                hostname = "localhost",
+                applicationName="Rss Downloader",
+                notifications=[self.title],
+                defaultNotifications=[self.title],
+                hostname="localhost",
             )
 
             self.growl.register()
 
-
         def send_download_notification(self, torrent):
             self.growl.notify(
-                noteType = "New Download",
-                title = "New torrent downloaded",
-                description = "%s was downloaded" % torrent.name,
-                sticky = False,
-                priority = 1,
+                noteType=self.title,
+                title="New torrent downloaded",
+                description="%s was downloaded" % torrent.name,
+                sticky=False,
+                priority=1,
             )
 
 
@@ -42,6 +42,7 @@ if __name__ == '__main__':
     database = db.Database()
     database.connect()
 
-    torrent = database.query_torrents().order_by(db.Torrent.first_seen.desc()).limit(1).one()
+    torrent = database.query_torrents().order_by(
+            db.Torrent.first_seen.desc()).limit(1).one()
 
     growler.send_download_notification(torrent)

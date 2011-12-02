@@ -3,18 +3,23 @@ import wx.lib.scrolledpanel as scrolled
 
 
 class ListEditorCtrl(wx.Panel):
-    def __init__(self, parent, caption, list_items, id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+    def __init__(self, parent, caption, list_items,
+            id=-1, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+
         wx.Panel.__init__(self, parent, -1, pos, size, style)
 
         self.list_items = []
         self.has_changes = False
 
         #TODO: Is this the right image for this?
-        self.remove_image = wx.GetApp().load_app_image('cross.png').ConvertToBitmap()
+        self.remove_image = wx.GetApp().load_app_image('cross.png')
+        self.remove_image = self.remove_image.ConvertToBitmap()
 
-        self.scrolled_list = scrolled.ScrolledPanel(self, -1, style=wx.SUNKEN_BORDER)
+        self.scrolled_list = scrolled.ScrolledPanel(self, -1,
+                style=wx.SUNKEN_BORDER)
+
         self.scrolled_sizer = wx.GridBagSizer(2, 2)
-        self.scrolled_sizer.SetEmptyCellSize((0,0))
+        self.scrolled_sizer.SetEmptyCellSize((0, 0))
 
         for item in list_items:
             self._add_item_to_list(item)
@@ -30,15 +35,18 @@ class ListEditorCtrl(wx.Panel):
         self.add_button = wx.Button(panel, -1, "Add", style=wx.BU_EXACTFIT)
 
         inner_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        inner_sizer.Add(self.add_text, 1, wx.EXPAND|wx.TOP|wx.BOTTOM|wx.RIGHT, 2)
-        inner_sizer.Add(self.add_button, 0, wx.TOP|wx.BOTTOM, 2)
+        inner_sizer.Add(self.add_text, 1,
+                wx.EXPAND | wx.TOP | wx.BOTTOM | wx.RIGHT, 2)
+        inner_sizer.Add(self.add_button, 0, wx.TOP | wx.BOTTOM, 2)
         panel.SetSizer(inner_sizer)
 
         self.add_text.SetFocus()
 
         box_sizer = wx.BoxSizer(wx.VERTICAL)
-        box_sizer.Add(self.scrolled_list, 1, wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, 10)
-        box_sizer.Add(panel, 0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.TOP, 10)
+        box_sizer.Add(self.scrolled_list, 1,
+                wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 10)
+        box_sizer.Add(panel, 0,
+                wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.TOP, 10)
 
         self.SetSizer(box_sizer)
 
@@ -51,8 +59,7 @@ class ListEditorCtrl(wx.Panel):
         self.scrolled_list.SetupScrolling()
 
         self.has_changes = True
-        print 'Changed list'
-        
+
         #TODO: Should auto scroll to the bottom of the list
         #bottom = self.scrolled_list.GetScrollRange(wx.VERTICAL)
         #self.scrolled_list.SetScrollPos(wx.VERTICAL, bottom, False)
@@ -60,28 +67,33 @@ class ListEditorCtrl(wx.Panel):
     def _add_item_to_list(self, item_text):
         self.list_items.append(item_text)
 
-        static_text = wx.StaticText(self.scrolled_list, -1, item_text, style=wx.BORDER_NONE)
-        remove_button = wx.BitmapButton(self.scrolled_list, -1, self.remove_image, (0, 0), (20, 20))
+        static_text = wx.StaticText(self.scrolled_list, -1, item_text,
+                style=wx.BORDER_NONE)
+        remove_button = wx.BitmapButton(self.scrolled_list, -1,
+                self.remove_image, (0, 0), (20, 20))
         remove_button.SetToolTipString("Remove")
 
-        idx = (len(self.list_items) - 1) * 2 
+        idx = (len(self.list_items) - 1) * 2
 
         self.Bind(wx.EVT_BUTTON, self.OnRemoveRow, remove_button)
 
-        self.scrolled_sizer.Add(remove_button, (idx, 0), (1, 1), wx.ALL, 2)
-        self.scrolled_sizer.Add(static_text, (idx, 1), (1, 1), wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 2)
+        self.scrolled_sizer.Add(remove_button, (idx, 0), (1, 1),
+                wx.ALL, 2)
+        self.scrolled_sizer.Add(static_text, (idx, 1), (1, 1),
+                wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 2)
 
         line = wx.StaticLine(self.scrolled_list, -1, style=wx.LI_HORIZONTAL)
-        self.scrolled_sizer.Add(line, (idx+1, 0), (1, 2), wx.EXPAND|wx.ALL, 0)
+        self.scrolled_sizer.Add(line, (idx + 1, 0), (1, 2),
+                wx.EXPAND | wx.ALL, 0)
 
     def OnRemoveRow(self, evt):
         idx = self.scrolled_sizer.GetItemPosition(evt.GetEventObject())[0]
-        
+
         del self.list_items[idx / 2]
 
         button = self.scrolled_sizer.FindItemAtPosition((idx, 0)).GetWindow()
         text = self.scrolled_sizer.FindItemAtPosition((idx, 1)).GetWindow()
-        line = self.scrolled_sizer.FindItemAtPosition((idx+1, 0)).GetWindow()
+        line = self.scrolled_sizer.FindItemAtPosition((idx + 1, 0)).GetWindow()
 
         if button is None:
             return
@@ -94,14 +106,17 @@ class ListEditorCtrl(wx.Panel):
         text.Destroy()
         line.Destroy()
 
-        for move_idx in range(idx+2, self.scrolled_sizer.GetRows(), 2):
-            button = self.scrolled_sizer.FindItemAtPosition((move_idx, 0)).GetWindow()
-            text = self.scrolled_sizer.FindItemAtPosition((move_idx, 1)).GetWindow()
-            line = self.scrolled_sizer.FindItemAtPosition((move_idx+1, 0)).GetWindow()
+        for move_idx in range(idx + 2, self.scrolled_sizer.GetRows(), 2):
+            button = self.scrolled_sizer.FindItemAtPosition(
+                    (move_idx, 0)).GetWindow()
+            text = self.scrolled_sizer.FindItemAtPosition(
+                    (move_idx, 1)).GetWindow()
+            line = self.scrolled_sizer.FindItemAtPosition(
+                    (move_idx + 1, 0)).GetWindow()
 
-            self.scrolled_sizer.SetItemPosition(button, (move_idx-2, 0))
-            self.scrolled_sizer.SetItemPosition(text, (move_idx-2, 1))
-            self.scrolled_sizer.SetItemPosition(line, (move_idx-1, 0))
+            self.scrolled_sizer.SetItemPosition(button, (move_idx - 2, 0))
+            self.scrolled_sizer.SetItemPosition(text, (move_idx - 2, 1))
+            self.scrolled_sizer.SetItemPosition(line, (move_idx - 1, 0))
 
         self.scrolled_sizer.Layout()
         self.has_changes = True
@@ -109,9 +124,3 @@ class ListEditorCtrl(wx.Panel):
     def GetListItems(self):
         # List should be kept up to date automatically
         return self.list_items
-
-
-
-
-
-

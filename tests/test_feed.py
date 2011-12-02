@@ -26,6 +26,7 @@ RSS_TEST_CONTENT = """<?xml version="1.0" encoding="utf-8" ?>
 </rss>
 """
 
+
 def fake_urllib2_urlopen(url):
     class FakeReader(object):
         def read(self):
@@ -54,5 +55,3 @@ def test_feed_parsing():
     assert rss_entries[2]['title'] == 'Last.Show.S01E04.Last.Name.HDTV.XviD-ZXCV'
     assert rss_entries[2]['link'] == 'http://test.me/download/torrent/3/'
     assert rss_entries[2]['description'] == 'Last Show: Last Name'
-
-

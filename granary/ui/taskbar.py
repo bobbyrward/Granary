@@ -4,8 +4,8 @@ import wx
 class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
     TBMENU_FEED_HISTORY = wx.NewId()
     TBMENU_SHOW_OPTIONS = wx.NewId()
-    TBMENU_CLOSE   = wx.NewId()
-    
+    TBMENU_CLOSE = wx.NewId()
+
     def __init__(self, frame):
         wx.TaskBarIcon.__init__(self)
         self.frame = frame
@@ -15,7 +15,7 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
         icon = self.MakeIcon(image)
         self.SetIcon(icon, "Rss Downloader")
         self.imgidx = 1
-        
+
         # bind some events
         self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarToggleFeedHistory)
         self.Bind(wx.EVT_MENU, self.OnTaskBarShowFeedHistory, id=self.TBMENU_FEED_HISTORY)
@@ -34,7 +34,7 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
         menu.AppendSeparator()
         menu.Append(self.TBMENU_SHOW_OPTIONS, "&Options")
         menu.AppendSeparator()
-        menu.Append(self.TBMENU_CLOSE,   "E&xit")
+        menu.Append(self.TBMENU_CLOSE, "E&xit")
         return menu
 
     def MakeIcon(self, img):
@@ -47,7 +47,7 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
         elif "wxGTK" in wx.PlatformInfo:
             img = img.Scale(22, 22)
         # wxMac can be any size upto 128x128, so leave the source img alone....
-        icon = wx.IconFromBitmap(img.ConvertToBitmap() )
+        icon = wx.IconFromBitmap(img.ConvertToBitmap())
         return icon
 
     def OnTaskBarClose(self, evt):
@@ -61,6 +61,3 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
 
     def OnTaskBarShowOptions(self, evt):
         wx.CallAfter(self.frame.ShowOptions)
-
-
-

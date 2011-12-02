@@ -10,7 +10,3 @@ def test_required_settings():
 
 def test_config_directory_exists():
     assert os.path.exists(CONFIG.get_config_path())
-
-
-
-

@@ -5,6 +5,18 @@ from granary.integration.delugewebapi import DelugeWebUIClient
 from granary.configmanager import config
 
 
+DELUGE_CONFIG_KEYS = [
+    'add_paused',
+    'compact_allocation',
+    'download_location',
+    'max_connections_per_torrent',
+    'max_download_speed_per_torrent',
+    'max_upload_speed_per_torrent',
+    'max_upload_slots_per_torrent',
+    'prioritize_first_last_pieces',
+]
+
+
 def deluge_web_ui_downloader(filename, url):
     try:
         client = DelugeWebUIClient(config().get_key('DELUGE_WEB_UI_URL'))
@@ -25,13 +37,9 @@ def deluge_web_ui_downloader(filename, url):
             print 'ERROR: Deluge web ui did not download torrent successfully'
             return False
 
-        options = client.get_config_values(
-                    'add_paused', 'compact_allocation', 'download_location',
-                    'max_connections_per_torrent', 'max_download_speed_per_torrent',
-                    'max_upload_speed_per_torrent', 'max_upload_slots_per_torrent',
-                    'prioritize_first_last_pieces')
-        
-        torrent = { 
+        options = client.get_config_values(*DELUGE_CONFIG_KEYS)
+
+        torrent = {
             'path': file_path,
             'options': options,
         }
@@ -55,7 +63,9 @@ def watch_folder_downloader(filename, url):
         response = urllib2.urlopen(url)
         content = response.read()
 
-        filename = os.path.join(config().get_key('DOWNLOAD_DIRECTORY'), filename)
+        filename = os.path.join(
+                config().get_key('DOWNLOAD_DIRECTORY'),
+                filename)
 
         with open(filename, 'wb') as fd:
             fd.write(self.encoded)
@@ -80,7 +90,8 @@ TORRENT_INTEGRATION_TRANSLATION = {
 }
 
 
-def add_torrent_to_client(filename, url):
-    return TORRENT_INTEGRATION_TRANSLATION[config().get_key('TORRENT_INTEGRATION_METHOD')](filename, url)
+def add_torrent_to_client(torrent):
+    downloader = TORRENT_INTEGRATION_TRANSLATION[
+            config().get_key('TORRENT_INTEGRATION_METHOD')]
 
-
+    return downloader(torrent.name, torrent.download_link)
