@@ -40,11 +40,17 @@ class Database(object):
     def __init__(self):
         self.engine = None
         self.session = None
-        self.db_file_path = os.path.join(CONFIG.get_config_path(), 'rss_downloader.db').replace('\\', '/')
+
+        filename = 'rss_downloader.db'
+        self.db_file_path = os.path.join(CONFIG.get_config_path(), filename).replace('\\', '/')
+
+        # backwards compatibility with old broken location
+        if not os.path.exists(self.db_file_path):
+            if os.path.exists(filename):
+                os.rename(fielname, self.db_file_path)
 
     def connect(self):
-        #uri = 'sqlite:////%s' % self.db_file_path
-        uri = 'sqlite:///rss_downloader.db'
+        uri = 'sqlite:///%s' % self.db_file_path
 
         self.engine = create_engine(uri, echo=False)
 
