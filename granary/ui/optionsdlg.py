@@ -1,7 +1,6 @@
 import wx
 import  wx.lib.filebrowsebutton as filebrowse
 
-from granary.configmanager import CONFIG
 from granary.downloader import TORRENT_INTEGRATION_METHODS
 from granary.ui.listeditor import ListEditorCtrl
 
@@ -15,7 +14,7 @@ class IntegrationOptionsPanel(wx.Panel):
         labels = [TORRENT_INTEGRATION_METHODS[x] for x in self.integration_methods]
 
         self.integration_box = wx.RadioBox(self, -1, 'Integration Method', choices=labels, majorDimension=1, style=wx.RA_SPECIFY_ROWS)
-        self.integration_box.SetStringSelection(TORRENT_INTEGRATION_METHODS[CONFIG.get_key('TORRENT_INTEGRATION_METHOD')])
+        self.integration_box.SetStringSelection(TORRENT_INTEGRATION_METHODS[wx.GetApp().Config.get_key('TORRENT_INTEGRATION_METHOD')])
         self.Bind(wx.EVT_RADIOBOX, self.OnIntegrationMethodChanged, self.integration_box)
 
         watch_box = wx.StaticBox(self, -1, "Torrent Watch Directory")
@@ -25,19 +24,19 @@ class IntegrationOptionsPanel(wx.Panel):
                 labelText='',
                 toolTip="Select the directory to download torrents to",
                 changeCallback=self.OnDownloadDirectoryChanged,
-                startDirectory=CONFIG.get_key("DOWNLOAD_DIRECTORY"),
+                startDirectory=wx.GetApp().Config.get_key("DOWNLOAD_DIRECTORY"),
                 newDirectory=True,
                 )
     
-        self.download_directory.SetValue(CONFIG.get_key("DOWNLOAD_DIRECTORY"))
+        self.download_directory.SetValue(wx.GetApp().Config.get_key("DOWNLOAD_DIRECTORY"))
 
         watch_box_sizer.Add(self.download_directory, 0, wx.EXPAND|wx.ALL, 5)
 
         deluge_web_ui_box = wx.StaticBox(self, -1, "Deluge WebUI Options")
         deluge_web_ui_box_sizer = wx.StaticBoxSizer(deluge_web_ui_box, wx.VERTICAL)
 
-        self.webui_url = wx.TextCtrl(self, -1, value=CONFIG.get_key('DELUGE_WEB_UI_URL'))
-        self.webui_password = wx.TextCtrl(self, -1, value=CONFIG.get_key('DELUGE_WEB_UI_PASSWORD'))
+        self.webui_url = wx.TextCtrl(self, -1, value=wx.GetApp().Config.get_key('DELUGE_WEB_UI_URL'))
+        self.webui_password = wx.TextCtrl(self, -1, value=wx.GetApp().Config.get_key('DELUGE_WEB_UI_PASSWORD'))
 
         webui_sizer = wx.GridBagSizer(5, 5)
         webui_sizer.Add(wx.StaticText(self, -1, "WebUI Url"), (0, 0), (1, 1), wx.ALIGN_CENTER_VERTICAL)
@@ -71,10 +70,10 @@ class IntegrationOptionsPanel(wx.Panel):
         print 'DirBrowseButton: %s\n' % evt.GetString()
 
     def CommitChanges(self):
-        CONFIG.set_key('TORRENT_INTEGRATION_METHOD', self.integration_methods[self.integration_box.GetSelection()])
-        CONFIG.set_key('DOWNLOAD_DIRECTORY', self.download_directory.GetValue())
-        CONFIG.set_key('DELUGE_WEB_UI_URL', self.webui_url.GetValue())
-        CONFIG.set_key('DELUGE_WEB_UI_PASSWORD', self.webui_password.GetValue())
+        wx.GetApp().Config.set_key('TORRENT_INTEGRATION_METHOD', self.integration_methods[self.integration_box.GetSelection()])
+        wx.GetApp().Config.set_key('DOWNLOAD_DIRECTORY', self.download_directory.GetValue())
+        wx.GetApp().Config.set_key('DELUGE_WEB_UI_URL', self.webui_url.GetValue())
+        wx.GetApp().Config.set_key('DELUGE_WEB_UI_PASSWORD', self.webui_password.GetValue())
 
 
 class GrowlOptionsPanel(wx.Panel):
@@ -82,7 +81,7 @@ class GrowlOptionsPanel(wx.Panel):
         wx.Panel.__init__(self, parent, -1)
 
         self.enable_growl = wx.CheckBox(self, -1, "Enable Growl Support")
-        self.enable_growl.SetValue(CONFIG.get_key('ENABLE_GROWL'))
+        self.enable_growl.SetValue(wx.GetApp().Config.get_key('ENABLE_GROWL'))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.enable_growl, 0, wx.EXPAND|wx.ALL, 5)
@@ -90,7 +89,7 @@ class GrowlOptionsPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def CommitChanges(self):
-        CONFIG.set_key('ENABLE_GROWL', self.enable_growl.GetValue())
+        wx.GetApp().Config.set_key('ENABLE_GROWL', self.enable_growl.GetValue())
 
 
 class OptionsDialog(wx.Dialog):
@@ -102,10 +101,10 @@ class OptionsDialog(wx.Dialog):
         self.integration_panel = IntegrationOptionsPanel(notebook)
         notebook.AddPage(self.integration_panel, "Integration Method")
 
-        self.rss_feed_list_editor = ListEditorCtrl(notebook, "Feed URLs", CONFIG.get_key("FEED_URLS"), size=(500, 200))
+        self.rss_feed_list_editor = ListEditorCtrl(notebook, "Feed URLs", wx.GetApp().Config.get_key("FEED_URLS"), size=(500, 200))
         notebook.AddPage(self.rss_feed_list_editor, "Feed URLs")
 
-        self.match_regexp_list_editor = ListEditorCtrl(notebook, "Match Regexps", CONFIG.get_key("MATCH_TORRENTS"))
+        self.match_regexp_list_editor = ListEditorCtrl(notebook, "Match Regexps", wx.GetApp().Config.get_key("MATCH_TORRENTS"))
         notebook.AddPage(self.match_regexp_list_editor, "Match Regexps")
 
         self.growl_panel = GrowlOptionsPanel(notebook)
@@ -130,8 +129,8 @@ class OptionsDialog(wx.Dialog):
     def CommitChanges(self):
         self.integration_panel.CommitChanges()
         self.growl_panel.CommitChanges()
-        CONFIG.set_key("FEED_URLS", self.rss_feed_list_editor.GetListItems())
-        CONFIG.set_key("MATCH_TORRENTS", self.match_regexp_list_editor.GetListItems())
+        wx.GetApp().Config.set_key("FEED_URLS", self.rss_feed_list_editor.GetListItems())
+        wx.GetApp().Config.set_key("MATCH_TORRENTS", self.match_regexp_list_editor.GetListItems())
 
 
 if __name__ == '__main__':
@@ -141,5 +140,5 @@ if __name__ == '__main__':
 
     if result == wx.ID_OK:
         main.CommitChanges()
-        CONFIG.save()
+        wx.GetApp().Config.save()
 

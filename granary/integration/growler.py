@@ -1,12 +1,9 @@
-
 try:
     import gntp
     import gntp.notifier
 except ImportError:
     gntp = None
     
-from granary.configmanager import CONFIG
-
 
 if gntp is None:
     class Growler(object):

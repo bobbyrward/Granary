@@ -65,6 +65,3 @@ class ConfigManager(object):
         return os.path.dirname(__file__)
     
 
-CONFIG = ConfigManager()
-
-
