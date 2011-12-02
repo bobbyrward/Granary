@@ -40,7 +40,7 @@ class RssDownloaderApp(wx.App):
     def OnNewTorrentSeen(self, torrent):
         # send the growl notification if enabled
         if config().get_key('ENABLE_GROWL') and config().get_key('ENABLE_GROWL_NEW_TORRENT_NOTIFICATION'):
-            self.growler.send_download_notification(torrent)
+            self.growler.send_new_torrent_notification(torrent)
 
         # I like knowing when it sees new torrents.
         # NOTE: should find a better way to do this and eliminate output where I can
