@@ -60,6 +60,9 @@ class ConfigManager(object):
 
     def get_config_path(self):
         return self.config_folder
+
+    def get_app_path(self):
+        return os.path.dirname(__file__)
     
 
 CONFIG = ConfigManager()

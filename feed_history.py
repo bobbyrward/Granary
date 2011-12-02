@@ -1,7 +1,9 @@
+import os
+
 import wx
-import db
 import wx.lib.mixins.listctrl as listmix
-from hashlib import md5
+
+import db
 
 
 class FeedHistoryList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -25,8 +27,9 @@ class FeedHistoryWindow(wx.Frame):
         wx.Frame.__init__(self, parent, -1, "Rss Downloader Feed History", size = (700,768),
                           style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 
-        img = wx.Image('16-rss-square.png', wx.BITMAP_TYPE_PNG)
-        icon = wx.IconFromBitmap(img.ConvertToBitmap() )
+        img = wx.GetApp().load_app_image('16-rss-square.png')
+        icon = wx.IconFromBitmap(img.ConvertToBitmap())
+
         self.SetIcon(icon)
         self.item_data = {}
 
@@ -39,7 +42,7 @@ class FeedHistoryWindow(wx.Frame):
 
         self.image_list = wx.ImageList(16, 16)
 
-        check = wx.Image('check.png', wx.BITMAP_TYPE_PNG)
+        check = wx.GetApp().load_app_image('check.png')
         self.image_list.Add(check.ConvertToBitmap())
 
         self.list.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)

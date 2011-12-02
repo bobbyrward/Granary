@@ -10,7 +10,7 @@ class ListEditorCtrl(wx.Panel):
         self.has_changes = False
 
         #TODO: Is this the right image for this?
-        self.remove_image = wx.Image('cross.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        self.remove_image = wx.GetApp().load_app_image('cross.png').ConvertToBitmap()
 
         self.scrolled_list = scrolled.ScrolledPanel(self, -1, style=wx.SUNKEN_BORDER)
         self.scrolled_sizer = wx.GridBagSizer(2, 2)

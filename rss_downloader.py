@@ -22,7 +22,7 @@ class MainWindow(wx.Frame):
         wx.Frame.__init__(self, None, -1, "Rss Downloader", size = (64,64),
                           style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 
-        img = wx.Image('16-rss-square.png', wx.BITMAP_TYPE_PNG)
+        img = wx.GetApp().load_app_image('16-rss-square.png')
         icon = wx.IconFromBitmap(img.ConvertToBitmap() )
         self.SetIcon(icon)
 
@@ -249,6 +249,12 @@ class RssDownloaderApp(wx.App):
                 # Download the torrent
                 self.download_db_torrent(found)
 
+    def load_app_image(self, filename):
+        path = os.path.join(CONFIG.get_app_path(), 'res', filename)
+
+        assert os.path.exists(path)
+
+        return wx.Image(path, wx.BITMAP_TYPE_PNG)
 
 
 if __name__ == '__main__':

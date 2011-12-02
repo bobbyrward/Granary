@@ -12,7 +12,7 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
         self.frame = frame
 
         # Set the image
-        image = wx.Image('16-rss-square.png', wx.BITMAP_TYPE_PNG)
+        image = wx.GetApp().load_app_image('16-rss-square.png')
         icon = self.MakeIcon(image)
         self.SetIcon(icon, "Rss Downloader")
         self.imgidx = 1

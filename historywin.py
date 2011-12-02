@@ -20,7 +20,7 @@ class HistoryWindow(wx.Frame):
         wx.Frame.__init__(self, parent, -1, "Rss Downloader History", size = (560,768),
                           style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
 
-        img = wx.Image('16-rss-square.png', wx.BITMAP_TYPE_PNG)
+        img = wx.GetApp().load_app_image('16-rss-square.png')
         icon = wx.IconFromBitmap(img.ConvertToBitmap() )
         self.SetIcon(icon)
 
