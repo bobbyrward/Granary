@@ -35,7 +35,7 @@ else:
 
         def send_download_notification(self, torrent):
             self.growl.notify(
-                noteType=self.title,
+                noteType="New Download",
                 title="New torrent downloaded",
                 description="%s was downloaded" % torrent.name,
                 sticky=False,
