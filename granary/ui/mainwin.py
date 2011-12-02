@@ -52,9 +52,6 @@ class MainWindow(wx.Frame):
                 if result == wx.YES:
                     wx.GetApp().test_matches()
 
-            if CONFIG.get_key('ENABLE_GROWL'):
-                wx.GetApp().growler.register()
-
     def OnUpdateTimer(self, evt):
         #print "Updating"
         wx.GetApp().download_items()
