@@ -63,5 +63,9 @@ class ConfigManager(object):
 
     def get_app_path(self):
         return os.path.dirname(__file__)
+
+
+def config():
+    return wx.GetApp().Config
     
 

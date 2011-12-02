@@ -6,7 +6,7 @@ from collections import defaultdict
 import wx
 from sqlalchemy.orm.exc import NoResultFound
 
-from granary.configmanager import ConfigManager
+from granary.configmanager import ConfigManager, config
 from granary import feed
 from granary import downloader
 from granary import db
@@ -48,7 +48,7 @@ class RssDownloaderApp(wx.App):
     def check_feed_entry(self, entry, matches):
         """Check a feed entry for a match against MATCH_TORRENTS"""
 
-        for match_regexp in self.Config.get_key('MATCH_TORRENTS'):
+        for match_regexp in config().get_key('MATCH_TORRENTS'):
             match = re.match(match_regexp, entry['title'], re.IGNORECASE)
 
             # If it matches a regular expression,
@@ -93,7 +93,7 @@ class RssDownloaderApp(wx.App):
 
         matches = defaultdict(list)
 
-        for rss_feed_url in self.Config.get_key('FEED_URLS'):
+        for rss_feed_url in config().get_key('FEED_URLS'):
             for entry in feed.get_rss_feed_entries(rss_feed_url):
                 # check each new entry
                 if self.add_entry_to_history(entry):
@@ -128,7 +128,7 @@ class RssDownloaderApp(wx.App):
 
         self.db.save_torrent(torrent)
 
-        if self.Config.get_key('ENABLE_GROWL'):
+        if config().get_key('ENABLE_GROWL'):
             self.growler.send_download_notification(torrent)
 
         print 'Downloaded "%s"' % torrent.name
@@ -178,7 +178,7 @@ class RssDownloaderApp(wx.App):
                     self.download_db_torrent(found)
 
     def load_app_image(self, filename):
-        path = os.path.join(self.Config.get_app_path(), 'res', filename)
+        path = os.path.join(config().get_app_path(), 'res', filename)
 
         assert os.path.exists(path)
 
@@ -188,4 +188,4 @@ class RssDownloaderApp(wx.App):
 if __name__ == '__main__':
     app = RssDownloaderApp(False)
     app.MainLoop()
-    self.Config.save()
+    config().save()

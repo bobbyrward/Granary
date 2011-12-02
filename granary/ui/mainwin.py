@@ -2,6 +2,7 @@ import os
 
 import wx
 
+from granary.configmanager import config
 from granary.ui import historywin
 from granary.ui import feed_history
 from granary.ui import taskbar
@@ -33,12 +34,12 @@ class MainWindow(wx.Frame):
         dlg = optionsdlg.OptionsDialog(self)
 
         if wx.ID_OK == dlg.ShowModal():
-            feed_count_pre = len(wx.GetApp().Config.get_key('FEED_URLS'))
-            regexp_count_pre = len(wx.GetApp().Config.get_key('MATCH_TORRENTS'))
+            feed_count_pre = len(config().get_key('FEED_URLS'))
+            regexp_count_pre = len(config().get_key('MATCH_TORRENTS'))
             dlg.CommitChanges()
-            wx.GetApp().Config.save()
-            regexp_count_post = len(wx.GetApp().Config.get_key('MATCH_TORRENTS'))
-            feed_count_post = len(wx.GetApp().Config.get_key('FEED_URLS'))
+            config().save()
+            regexp_count_post = len(config().get_key('MATCH_TORRENTS'))
+            feed_count_post = len(config().get_key('FEED_URLS'))
 
             if feed_count_pre < feed_count_post:
                 # update the history before going further

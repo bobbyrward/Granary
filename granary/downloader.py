@@ -1,16 +1,15 @@
 import urllib2
 import os
 
-import wx
-
 from granary.integration.delugewebapi import DelugeWebUIClient
+from granary.configmanager import config
 
 
 def deluge_web_ui_downloader(filename, url):
     try:
-        client = DelugeWebUIClient(wx.GetApp().Config.get_key('DELUGE_WEB_UI_URL'))
+        client = DelugeWebUIClient(config().get_key('DELUGE_WEB_UI_URL'))
 
-        response = client.login(wx.GetApp().Config.get_key('DELUGE_WEB_UI_PASSWORD'))
+        response = client.login(config().get_key('DELUGE_WEB_UI_PASSWORD'))
 
         if not response:
             print 'ERROR: Deluge web ui did not accept configured password'
@@ -56,7 +55,7 @@ def watch_folder_downloader(filename, url):
         response = urllib2.urlopen(url)
         content = response.read()
 
-        filename = os.path.join(wx.GetApp().Config.get_key('DOWNLOAD_DIRECTORY'), filename)
+        filename = os.path.join(config().get_key('DOWNLOAD_DIRECTORY'), filename)
 
         with open(filename, 'wb') as fd:
             fd.write(self.encoded)
@@ -82,6 +81,6 @@ TORRENT_INTEGRATION_TRANSLATION = {
 
 
 def add_torrent_to_client(filename, url):
-    return TORRENT_INTEGRATION_TRANSLATION[wx.GetApp().Config.get_key('TORRENT_INTEGRATION_METHOD')](filename, url)
+    return TORRENT_INTEGRATION_TRANSLATION[config().get_key('TORRENT_INTEGRATION_METHOD')](filename, url)
 
 

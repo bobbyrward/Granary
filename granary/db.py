@@ -1,7 +1,6 @@
 import os.path
 from datetime import datetime
 
-import wx
 from sqlalchemy import create_engine
 from sqlalchemy import Column
 from sqlalchemy import Integer
@@ -12,6 +11,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import exc
 
+from granary.configmanager import config
 
 Base = declarative_base()
 Session = sessionmaker()
@@ -41,7 +41,7 @@ class Database(object):
         self.session = None
 
         filename = 'rss_downloader.db'
-        self.db_file_path = os.path.join(wx.GetApp().Config.get_config_path(), filename).replace('\\', '/')
+        self.db_file_path = os.path.join(config().get_config_path(), filename).replace('\\', '/')
 
         # backwards compatibility with old broken location
         if not os.path.exists(self.db_file_path):
