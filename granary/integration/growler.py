@@ -26,8 +26,8 @@ else:
 
         def send_new_torrent_notification(self, torrent):
             self.growl.notify(
-                noteType=self.title,
-                title="New torrent Seen",
+                noteType="New Torrent",
+                title="New torrent seen",
                 description="%s seen" % torrent.name,
                 sticky=False,
                 priority=1,
