@@ -100,7 +100,6 @@ if __name__ == '__main__':
 
     file_path = result
 
-    print 'getting config values'
     options = client.get_config_values(
                 'add_paused',
                 'compact_allocation',

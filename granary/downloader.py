@@ -24,17 +24,14 @@ def deluge_web_ui_downloader(filename, url):
         response = client.login(config().get_key('DELUGE_WEB_UI_PASSWORD'))
 
         if not response:
-            print 'ERROR: Deluge web ui did not accept configured password'
             return False
 
         response = client.check_session()
         if not response:
-            print 'ERROR: Deluge web ui did not accept configured password'
             return False
 
         file_path = client.download_torrent_from_url(url)
         if not response:
-            print 'ERROR: Deluge web ui did not download torrent successfully'
             return False
 
         options = client.get_config_values(*DELUGE_CONFIG_KEYS)
@@ -47,10 +44,8 @@ def deluge_web_ui_downloader(filename, url):
         result = client.add_torrents(torrent)
 
         if not result:
-            print 'ERROR: Deluge web ui did not add torrent successfully'
             return False
     except Exception, e:
-        print '%r: %s' % (e, e)
         import traceback
         traceback.print_exc()
         return False
@@ -70,7 +65,6 @@ def watch_folder_downloader(filename, url):
         with open(filename, 'wb') as fd:
             fd.write(self.encoded)
     except Exception, e:
-        print '%r: %s' % (e, e)
         import traceback
         traceback.print_exc()
         return False

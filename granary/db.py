@@ -94,9 +94,4 @@ if __name__ == '__main__':
             datetime.now()
             )
 
-    if db.save_torrent(new_torrent):
-        print 'Saved successfully'
-    else:
-        print 'Error saving torrent'
-
-    print results
+    db.save_torrent(new_torrent)

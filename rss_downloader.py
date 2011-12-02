@@ -49,7 +49,7 @@ class RssDownloaderApp(wx.App):
         if config().get_key('ENABLE_GROWL'):
             self.growler.send_download_notification(torrent)
 
-        #print 'Downloaded "%s"' % torrent.name
+        print 'Downloaded "%s"' % torrent.name
 
         # let the main window know about the torrent
         self.mainwindow.NewTorrentDownloaded(torrent)

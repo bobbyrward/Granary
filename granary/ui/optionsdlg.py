@@ -62,15 +62,11 @@ class IntegrationOptionsPanel(wx.Panel):
         if evt is not None:
             index = evt.GetInt()
 
-        print 'Selected %s' % self.integration_methods[index]
         method = self.integration_methods[index]
 
         self.download_directory.Enabled = method == 'WATCH_FOLDER'
         self.webui_url.Enabled = method == 'DELUGE_WEB_UI'
         self.webui_password.Enabled = method == 'DELUGE_WEB_UI'
-
-    def OnDownloadDirectoryChanged(self, evt):
-        print 'DirBrowseButton: %s\n' % evt.GetString()
 
     def CommitChanges(self):
         config().set_key('TORRENT_INTEGRATION_METHOD', self.integration_methods[self.integration_box.GetSelection()])
