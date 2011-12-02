@@ -15,15 +15,23 @@ if gntp is None:
 else:
     class Growler(object):
         def __init__(self):
-            self.title = "New Download"
             self.growl = gntp.notifier.GrowlNotifier(
                 applicationName="Rss Downloader",
-                notifications=[self.title],
-                defaultNotifications=[self.title],
+                notifications=["New Download", "New Torrent"],
+                defaultNotifications=["New Download"],
                 hostname="localhost",
             )
 
             self.growl.register()
+
+        def send_new_torrent_notification(self, torrent):
+            self.growl.notify(
+                noteType=self.title,
+                title="New torrent Seen",
+                description="%s seen" % torrent.name,
+                sticky=False,
+                priority=1,
+            )
 
         def send_download_notification(self, torrent):
             self.growl.notify(

@@ -23,6 +23,8 @@ class ConfigManager(object):
         self.default_options['DELUGE_WEB_UI_URL'] = 'http://localhost:8112'
         self.default_options['TORRENT_INTEGRATION_METHOD'] = 'WATCH_FOLDER'
         self.default_options['ENABLE_GROWL'] = False
+        self.default_options['ENABLE_GROWL_NEW_TORRENT_NOTIFICATION'] = False
+        self.default_options['ENABLE_GROWL_DOWNLOAD_NOTIFICATION'] = True
 
         if not os.path.exists(self.config_folder):
             os.mkdir(self.config_folder)
@@ -30,22 +32,26 @@ class ConfigManager(object):
         self.config_file_path = os.path.join(
                 self.config_folder, 'rss_downloader.config')
 
+        self.load_defaults()
+
         try:
             with open(self.config_file_path, 'rb') as fd:
                 self.config = pickle.load(fd)
         except IOError:
-            self.load_defaults()
+            pass
 
     def save(self):
         with open(self.config_file_path, 'wb') as fd:
             pickle.dump(self.config, fd)
 
     def load_defaults(self):
+        self.config = self.default_options
+
         try:
             config_orig = imp.load_source('rss_downloader.config',
                     os.path.join(self.config_folder, 'config.py'))
         except:
-            self.config = self.default_options
+            pass
         else:
             def copy_config(key):
                 self.config[key] = getattr(config_orig, key)
