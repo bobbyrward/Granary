@@ -23,7 +23,6 @@ class MainWindow(wx.Frame):
         except:
             self.tbicon = None
 
-        self.history = historywin.HistoryWindow(self)
         self.feed_history = feed_history.FeedHistoryWindow(self)
         self.timer = wx.Timer(self)
         self.timer.Start(1000 * 60)
@@ -60,13 +59,9 @@ class MainWindow(wx.Frame):
         #print "Updating"
         wx.GetApp().download_items()
             
-    def ShowDownloadHistory(self):
-        self.history.Show()
-        self.history.Raise()
-
-    def ToggleDownloadHistory(self):
-        if self.history.IsShown():
-            self.history.Hide()
+    def ToggleFeedistory(self):
+        if self.feed_history.IsShown():
+            self.feed_history.Hide()
         else:
             self.ShowFeedHistory()
 
@@ -85,10 +80,7 @@ class MainWindow(wx.Frame):
         self.Destroy()
 
     def NewTorrentDownloaded(self, found):
-        #TODO: Also need to update the feed history to add the downloaded icon to the relevant row
-
         self.feed_history.UpdateTorrentDownloaded(found)
-        self.history.NewTorrentDownloaded(found)
 
     def NewTorrentSeen(self, seen):
         self.feed_history.NewTorrentSeen(seen)
