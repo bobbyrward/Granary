@@ -69,7 +69,7 @@ class FeedDownloader(object):
         """Download all the new entries
         """
         for torrent in matched_entries:
-            download_torrent(torrent)
+            self.download_torrent(torrent)
 
     def download_torrent(self, torrent):
         """Add the torrent to the client and update the app
@@ -101,7 +101,7 @@ class FeedDownloader(object):
         torrents = query.order_by(db.Torrent.first_seen.desc()).all()
 
         # find the matches
-        matched_entries = check_new_entries(torrents)
+        matched_entries = self.check_new_entries(torrents)
 
         found_list = []
 
@@ -124,8 +124,5 @@ class FeedDownloader(object):
                     wx.YES_NO | wx.ICON_QUESTION)
 
             if result == wx.YES:
-                # download them all 
-                download_torrents(found_list)
-
-
-
+                # download them all
+                self.download_torrents(found_list)
