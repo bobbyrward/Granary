@@ -11,7 +11,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import exc
 
-from configmanager import CONFIG
+from granary.configmanager import CONFIG
 
 
 Base = declarative_base()

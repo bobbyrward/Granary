@@ -1,7 +1,7 @@
 import wx
-import db
 import wx.lib.mixins.listctrl as listmix
 
+from granary import db
 
 class HistoryList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):

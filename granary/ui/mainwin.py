@@ -2,11 +2,11 @@ import os
 
 import wx
 
-from configmanager import CONFIG
-import historywin
-import feed_history
-import taskbar
-import optionsdlg
+from granary.configmanager import CONFIG
+from granary.ui import historywin
+from granary.ui import feed_history
+from granary.ui import taskbar
+from granary.ui import optionsdlg
 
 
 class MainWindow(wx.Frame):

@@ -1,8 +1,8 @@
 import urllib2
 import os
-from delugewebapi import DelugeWebUIClient
 
-from configmanager import CONFIG
+from granary.configmanager import CONFIG
+from granary.integration.delugewebapi import DelugeWebUIClient
 
 
 def deluge_web_ui_downloader(filename, url):

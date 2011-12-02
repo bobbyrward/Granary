@@ -6,12 +6,12 @@ from collections import defaultdict
 import wx
 from sqlalchemy.orm.exc import NoResultFound
 
-from configmanager import CONFIG
-import feed
-import downloader
-import db
-import mainwin
-import growler
+from granary.configmanager import CONFIG
+from granary import feed
+from granary import downloader
+from granary import db
+from granary.ui import mainwin
+from granary.integration import growler
 
 
 class RssDownloaderApp(wx.App):

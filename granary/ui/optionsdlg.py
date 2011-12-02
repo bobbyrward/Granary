@@ -1,9 +1,9 @@
 import wx
 import  wx.lib.filebrowsebutton as filebrowse
 
-from configmanager import CONFIG
-from downloader import TORRENT_INTEGRATION_METHODS
-from listeditor import ListEditorCtrl
+from granary.configmanager import CONFIG
+from granary.downloader import TORRENT_INTEGRATION_METHODS
+from granary.ui.listeditor import ListEditorCtrl
 
 
 class IntegrationOptionsPanel(wx.Panel):

@@ -5,7 +5,7 @@ try:
 except ImportError:
     gntp = None
     
-from configmanager import CONFIG
+from granary.configmanager import CONFIG
 
 
 if gntp is None:
@@ -40,7 +40,7 @@ else:
 
 if __name__ == '__main__':
     growler = Growler()
-    import db
+    from granary import db
 
     database = db.Database()
     database.connect()

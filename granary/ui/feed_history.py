@@ -3,7 +3,7 @@ import os
 import wx
 import wx.lib.mixins.listctrl as listmix
 
-import db
+from granary import db
 
 
 class FeedHistoryList(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
