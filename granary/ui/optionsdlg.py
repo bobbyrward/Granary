@@ -105,7 +105,7 @@ class GrowlOptionsPanel(wx.Panel):
         config().set_key('ENABLE_GROWL', self.enable_growl.GetValue())
         config().set_key('ENABLE_GROWL_DOWNLOAD_NOTIFICATION', self.enable_download_notifications.GetValue())
         config().set_key('ENABLE_GROWL_NEW_TORRENT_NOTIFICATION', self.enable_new_torrent_notifications.GetValue())
-        
+
 
 class OptionsDialog(wx.Dialog):
     def __init__(self, parent):
