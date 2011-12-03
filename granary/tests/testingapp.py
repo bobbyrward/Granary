@@ -32,4 +32,3 @@ class TestingApp(wx.App):
         self.SetAppName("test_app")
         self.Config = MockConfig()
         return True
-

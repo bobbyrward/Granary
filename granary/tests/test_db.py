@@ -39,7 +39,7 @@ def test_torrent_constructor():
     yesterday = datetime.now() + timedelta(days=-1)
     downloaded = True
     torrent = db.Torrent(name, link, yesterday, downloaded)
-    
+
     assert torrent.name == name
     assert torrent.download_link == link
     assert torrent.first_seen == yesterday
