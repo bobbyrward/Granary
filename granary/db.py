@@ -51,8 +51,11 @@ class Database(object):
             if os.path.exists(filename):
                 os.rename(fielname, self.db_file_path)
 
-    def connect(self):
-        uri = 'sqlite:///%s' % self.db_file_path
+    def connect(self, use_in_memory=False):
+        if use_in_memory:
+            uri = 'sqlite:///:memory:'
+        else:
+            uri = 'sqlite:///%s' % self.db_file_path
 
         self.engine = create_engine(uri, echo=False)
 
@@ -78,20 +81,4 @@ class Database(object):
 
     def set_torrent_downloaded(self, torrent):
         torrent.downloaded = True
-        self.save_torent(torrent)
-
-
-if __name__ == '__main__':
-    db = Database()
-    db.connect()
-
-    results = db.query_torrents().filter(
-            Torrent.name.like('Sons.of.Anarchy.%')).all()
-
-    new_torrent = Torrent(
-            'Sons.of.Anarchy.S04E12.Burnt.and.Purged.Away.HDTV.XviD-FQM',
-            '',
-            datetime.now()
-            )
-
-    db.save_torrent(new_torrent)
+        self.save_torrent(torrent)
