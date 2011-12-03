@@ -49,12 +49,12 @@ class DelugeWebUIClient(object):
                 self.endpoint, 'POST', request, self.headers)
 
         if response.status != 200:
-            raise DelugeClientResponseError(response)
+            raise DelugeClientResponseError(raw_args, response)
 
         decoded = json.loads(content)
 
         if decoded['error'] is not None:
-            raise DelugeWebUIApiError(decoded)
+            raise DelugeWebUIApiError(raw_args, decoded)
 
         if 'set-cookie' in response:
             self.headers['Cookie'] = response['set-cookie']
