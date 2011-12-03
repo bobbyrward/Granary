@@ -85,7 +85,7 @@ class FeedHistoryWindow(wx.Frame):
         except KeyError:
             return
 
-        wx.GetApp().download_db_torrent(torrent)
+        wx.GetApp().downloader.download_torrent(torrent)
 
     def UpdateTorrentDownloaded(self, torrent):
         reverse_dict = dict((y, x) for (x, y) in self.item_data.iteritems())
