@@ -1,8 +1,14 @@
+import logging
+
+
 try:
     import gntp
     import gntp.notifier
 except ImportError:
     gntp = None
+
+
+log = logging.getLogger('granary.integration.growler')
 
 
 if gntp is None:
@@ -25,6 +31,7 @@ else:
             self.growl.register()
 
         def send_new_torrent_notification(self, torrent):
+            log.debug('sending new torrent notification for %s', torrent.name)
             self.growl.notify(
                 noteType="New Torrent",
                 title="New torrent seen",
@@ -34,6 +41,7 @@ else:
             )
 
         def send_download_notification(self, torrent):
+            log.debug('sending download notification for %s', torrent.name)
             self.growl.notify(
                 noteType="New Download",
                 title="New torrent downloaded",

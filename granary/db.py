@@ -1,4 +1,5 @@
 import os.path
+import logging
 from datetime import datetime
 
 from sqlalchemy import create_engine
@@ -9,12 +10,16 @@ from sqlalchemy import DateTime
 from sqlalchemy import Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 from sqlalchemy import exc
 
 from granary.configmanager import config
 
 Base = declarative_base()
-Session = sessionmaker()
+Session = scoped_session(sessionmaker())
+
+
+log = logging.getLogger('granary.db')
 
 
 class Torrent(Base):
@@ -38,7 +43,6 @@ class Torrent(Base):
 class Database(object):
     def __init__(self):
         self.engine = None
-        self.session = None
 
         filename = 'rss_downloader.db'
 
@@ -57,20 +61,35 @@ class Database(object):
         else:
             uri = 'sqlite:///%s' % self.db_file_path
 
+        log.debug('connecting to %s', uri)
+
         self.engine = create_engine(uri, echo=False)
-
-        Base.metadata.create_all(self.engine)
-
         Session.configure(bind=self.engine)
 
+    def init(self):
+        log.debug('initializing tables')
+
+        session = Session()
+        Base.metadata.create_all(self.engine)
+        session.commit()
+        session.close()
+
+
+class DBSession(object):
+    def __init__(self):
         self.session = Session()
-        self.session.commit()
 
     def query_torrents(self):
         return self.session.query(Torrent)
 
     def save_torrent(self, torrent):
+        log.debug('saving torrent %s', torrent.name)
+
         self.session.add(torrent)
+
+        return self.commit()
+
+    def commit(self):
         try:
             self.session.commit()
         except exc.SQLAlchemyError:
@@ -80,5 +99,11 @@ class Database(object):
         return True
 
     def set_torrent_downloaded(self, torrent):
+        log.debug('setting torrent %s to downloaded', torrent.name)
+
         torrent.downloaded = True
-        self.save_torrent(torrent)
+
+        return self.save_torrent(torrent)
+
+    def get_torrent(self, name):
+        return self.session.query(Torrent).get(name)

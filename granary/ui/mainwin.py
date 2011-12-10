@@ -23,11 +23,7 @@ class MainWindow(wx.Frame):
 
         self.feed_history = feed_history.FeedHistoryWindow(self)
 
-        self.timer = wx.Timer(self)
-        self.timer.Start(1000 * 60)
-
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
-        self.Bind(wx.EVT_TIMER, self.OnUpdateTimer, self.timer)
 
     def ShowOptions(self):
         dlg = optionsdlg.OptionsDialog(self)
@@ -44,7 +40,9 @@ class MainWindow(wx.Frame):
 
             if feed_count_pre < feed_count_post:
                 # update the history before going further
-                wx.GetApp().downloader.tick()
+                #TODO: This needs to be made with the new threaded downloader
+                #wx.GetApp().downloader.tick()
+                pass
 
             if regexp_count_pre < regexp_count_post:
                 result = wx.MessageBox(
@@ -54,10 +52,9 @@ class MainWindow(wx.Frame):
                         "Test matches", wx.YES_NO | wx.ICON_QUESTION)
 
                 if result == wx.YES:
-                    wx.GetApp().downloader.test_regular_expressions()
-
-    def OnUpdateTimer(self, evt):
-        wx.GetApp().downloader.tick()
+                    pass
+                    #TODO: This needs to be made with the new threaded downloader
+                    #wx.GetApp().downloader.test_regular_expressions()
 
     def ToggleFeedistory(self):
         if self.feed_history.IsShown():
@@ -70,17 +67,8 @@ class MainWindow(wx.Frame):
         self.feed_history.Raise()
 
     def OnCloseWindow(self, event):
-        self.timer.Stop()
-        del self.timer
-
         if self.tbicon is not None:
             self.tbicon.Destroy()
             self.tbicon = None
 
         self.Destroy()
-
-    def NewTorrentDownloaded(self, found):
-        self.feed_history.UpdateTorrentDownloaded(found)
-
-    def NewTorrentSeen(self, seen):
-        self.feed_history.NewTorrentSeen(seen)

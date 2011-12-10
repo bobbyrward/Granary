@@ -1,5 +1,10 @@
 import wx
 
+#from twisted.internet import wxreactor
+#wxreactor.install()
+
+from twisted.internet import reactor
+
 
 class MockConfig(object):
     def __init__(self):
@@ -32,3 +37,19 @@ class TestingApp(wx.App):
         self.SetAppName("test_app")
         self.Config = MockConfig()
         return True
+
+
+TESTING_APP = None
+
+
+def app_run():
+    #wnd = wx.Frame(None, -1, "Testing")
+    reactor.run()
+
+
+def app_setup():
+    global TESTING_APP
+
+    if not TESTING_APP:
+        TESTING_APP = TestingApp(False)
+        #reactor.registerWxApp(TESTING_APP)

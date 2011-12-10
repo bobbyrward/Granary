@@ -1,6 +1,10 @@
+import logging
 import httplib2
 import urllib
 import json
+
+
+log = logging.getLogger('granary.integration.delugewebapi')
 
 
 class DelugeWebUIException(Exception):
@@ -27,7 +31,6 @@ class DelugeWebUIApiError(DelugeWebUIException):
 class DelugeWebUIClient(object):
     def __init__(self, endpoint):
         self.endpoint = urllib.basejoin(endpoint, '/json')
-        self.http = httplib2.Http()
         self.headers = {}
 
     def _send_request(self, method, params=None, id=None):
@@ -43,14 +46,17 @@ class DelugeWebUIClient(object):
             'id': id,
         }
 
+        log.debug('DelugeWebUIClient: encoding parameters')
         request = json.dumps(raw_args)
 
+        log.debug('DelugeWebUIClient: making request')
         response, content = self.http.request(
                 self.endpoint, 'POST', request, self.headers)
 
         if response.status != 200:
             raise DelugeClientResponseError(raw_args, response)
 
+        log.debug('DelugeWebUIClient: decoding response')
         decoded = json.loads(content)
 
         if decoded['error'] is not None:
@@ -58,6 +64,8 @@ class DelugeWebUIClient(object):
 
         if 'set-cookie' in response:
             self.headers['Cookie'] = response['set-cookie']
+
+        log.debug('DelugeWebUIClient: done')
 
         return decoded['result']
 
