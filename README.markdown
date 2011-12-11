@@ -10,6 +10,8 @@ TODO in order of priority:
 * Changed the growl tab in options to 'Notifications'
 ** Add option to disable native new and downloaded torrent notifications
 ** Move growl options to a static box
+* Add a timestamp to the status bar that shows when the last feed check was
+* Add a timestamp to the status bar that shows when the last new torrent was seen
 * Make db a package and split into separate modules
 * Make downloading and updating the database atomic. Nothing should ever be marked as downloaded that wasn't added to the client and vice versa.
 * Improve stability.

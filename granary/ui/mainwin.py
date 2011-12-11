@@ -5,7 +5,7 @@ import wx
 from granary.configmanager import config
 from granary.ui import historywin
 from granary.ui import taskbar
-from granary.ui import optionsdlg
+from granary.ui.options import OptionsDialog
 from granary.ui.history.frame import FeedHistoryWindow
 
 
@@ -26,7 +26,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
 
     def ShowOptions(self):
-        dlg = optionsdlg.OptionsDialog(self)
+        dlg = OptionsDialog(self)
 
         if wx.ID_OK == dlg.ShowModal():
             feed_count_pre = len(config().get_key('FEED_URLS'))
