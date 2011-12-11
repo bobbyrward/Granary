@@ -3,12 +3,36 @@ import logging
 import wx
 from wx.lib.newevent import NewCommandEvent
 
+from granary.configmanager import config
+
 
 log = logging.getLogger(__name__)
 
 
 (ClearSearchEvent, EVT_SEARCH_CLEAR) = NewCommandEvent()
 (PerformSearchEvent, EVT_SEARCH_PERFORM) = NewCommandEvent()
+
+
+SEARCH_HISTORY_MAX_LEN = 10
+
+
+def _get_search_history():
+    return config().get_key('SEARCH_HISTORY')
+
+
+def _add_search_to_history(history_item):
+    history = _get_search_history()
+
+    if history_item in history:
+        # already in history.  just move it to the top
+        history.remove(history_item)
+    elif len(history) >= SEARCH_HISTORY_MAX_LEN:
+        # truncate history
+        history.pop(0)
+
+    history.append(history_item)
+
+    config().set_key('SEARCH_HISTORY', history)
 
 
 class HistorySearch(wx.Panel):
@@ -19,6 +43,8 @@ class HistorySearch(wx.Panel):
         self.search.ShowSearchButton(True)
         self.search.ShowCancelButton(True)
 
+        self.RefreshHistoryMenu()
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.search, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
 
@@ -28,8 +54,11 @@ class HistorySearch(wx.Panel):
         self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.OnCancel, self.search)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnDoSearch, self.search)
 
+    def RefreshHistoryMenu(self):
+        self.search.SetMenu(self.CreateHistoryMenu())
+
     def OnCancel(self, evt):
-        log.debug("OnCancel: %s", evt.GetString())
+        log.debug("OnCancel")
 
         self.search.Clear()
 
@@ -40,24 +69,47 @@ class HistorySearch(wx.Panel):
 
         self.GetEventHandler().ProcessEvent(sub_event)
 
-    def OnSearch(self, evt):
-        log.debug("OnSearch: %s", evt.GetString())
+    def _SendSearchEvent(self):
+        search_string = self.search.GetValue()
+
+        if search_string == '':
+            self.OnCancel(None)
+            return
+
+        _add_search_to_history(search_string)
+
+        self.RefreshHistoryMenu()
 
         sub_event = PerformSearchEvent(self.GetId())
         sub_event.SetEventObject(self)
-        sub_event.terms = self.search.GetValue().lower().split(' ')
+        sub_event.terms = search_string.lower().split(' ')
 
-        log.debug("Sending EVT_SEARCH_PERFORM event: %s", self.search.GetValue())
+        log.debug("Sending EVT_SEARCH_PERFORM event: %s", search_string)
 
         self.GetEventHandler().ProcessEvent(sub_event)
+
+    def OnMenuSearch(self, evt, search_string):
+        log.debug("OnMenuSearch: %s", search_string)
+        self.search.SetValue(search_string)
+        self._SendSearchEvent()
+
+    def OnSearch(self, evt):
+        log.debug("OnSearch: %s", evt.GetString())
+        self._SendSearchEvent()
 
     def OnDoSearch(self, evt):
         log.debug("OnDoSearch: %s", self.search.GetValue())
+        self._SendSearchEvent()
 
-        sub_event = PerformSearchEvent(self.GetId())
-        sub_event.SetEventObject(self)
-        sub_event.terms = self.search.GetValue().lower().split(' ')
+    def CreateHistoryMenu(self):
+        menu = wx.Menu()
 
-        log.debug("Sending EVT_SEARCH_PERFORM event: %s", self.search.GetValue())
+        for item in reversed(_get_search_history()):
+            menu_item = menu.Append(-1, item)
 
-        self.GetEventHandler().ProcessEvent(sub_event)
+            def callback(evt, s=item):
+                self.OnMenuSearch(evt, s)
+
+            self.Bind(wx.EVT_MENU, callback, menu_item)
+
+        return menu

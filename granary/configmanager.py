@@ -25,6 +25,7 @@ class ConfigManager(object):
         self.default_options['ENABLE_GROWL'] = False
         self.default_options['ENABLE_GROWL_NEW_TORRENT_NOTIFICATION'] = False
         self.default_options['ENABLE_GROWL_DOWNLOAD_NOTIFICATION'] = True
+        self.default_options['SEARCH_HISTORY'] = []
 
         if not os.path.exists(self.config_folder):
             os.mkdir(self.config_folder)

@@ -73,12 +73,20 @@ class FeedHistoryWindow(wx.Frame):
         self.list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
     def OnClearSearch(self, evt):
+        if len(self.terms) == 0:
+            # already cleared
+            return
+
         self.ResetQuery()
 
     def OnPerformSearch(self, evt):
         like_filter = '%%%s%%' % '%'.join(evt.terms)
 
         log.debug('Search filter: %s', like_filter)
+
+        if self.terms == evt.terms:
+            # already using these terms
+            return
 
         self.terms = evt.terms
 

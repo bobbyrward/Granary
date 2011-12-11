@@ -7,7 +7,9 @@ TODO in order of priority:
 * BUG: Deluge WebUI integration can lock up the whole app
 ** Getting config values seems to be the problem point
 ** Move to a reactor thread and use a deferred to track status?
-* BUG: Duplicate entries are added to feed history list If there are any new torrents on app load
+* Changed the growl tab in options to 'Notifications'
+** Add option to disable native new and downloaded torrent notifications
+** Move growl options to a static box
 * Make db a package and split into separate modules
 * Make downloading and updating the database atomic. Nothing should ever be marked as downloaded that wasn't added to the client and vice versa.
 * Improve stability.
