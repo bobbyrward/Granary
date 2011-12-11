@@ -4,9 +4,9 @@ import wx
 
 from granary.configmanager import config
 from granary.ui import historywin
-from granary.ui import feed_history
 from granary.ui import taskbar
 from granary.ui import optionsdlg
+from granary.ui.history.frame import FeedHistoryWindow
 
 
 class MainWindow(wx.Frame):
@@ -21,7 +21,7 @@ class MainWindow(wx.Frame):
         except:
             self.tbicon = None
 
-        self.feed_history = feed_history.FeedHistoryWindow(self)
+        self.feed_history = FeedHistoryWindow(self)
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
 

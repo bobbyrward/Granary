@@ -12,7 +12,7 @@ from granary import db
 (TorrentDownloadedEvent, EVT_TORRENT_DOWNLOADED) = NewEvent()
 
 
-log = logging.getLogger('granary.download_queue')
+log = logging.getLogger(__name__)
 
 
 class DownloadQueue(object):

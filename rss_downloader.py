@@ -72,6 +72,9 @@ class RssDownloaderApp(wx.App):
 
         return True
 
+    def DoExit(self):
+        self.mainwindow.Close()
+
     def Shutdown(self, evt):
         evt.Skip()
 
@@ -93,8 +96,6 @@ class RssDownloaderApp(wx.App):
         #        1 * 1000,
         #        wx.ICON_INFORMATION)
 
-        # I like knowing when it sees new torrents.
-        # NOTE: should find a better way to do this and eliminate output where I can
         log.info('NEW: %s', evt.torrent.name)
 
     def OnTorrentDownloaded(self, evt):

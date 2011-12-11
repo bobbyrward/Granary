@@ -4,7 +4,7 @@ import urllib
 import json
 
 
-log = logging.getLogger('granary.integration.delugewebapi')
+log = logging.getLogger(__name__)
 
 
 class DelugeWebUIException(Exception):

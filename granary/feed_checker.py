@@ -18,7 +18,7 @@ from granary.configmanager import config
 NewTorrentSeenEvent, EVT_NEW_TORRENT_SEEN = NewEvent()
 
 
-log = logging.getLogger('granary.feeddownloader')
+log = logging.getLogger(__name__)
 
 
 def get_rss_feed_entries(url):

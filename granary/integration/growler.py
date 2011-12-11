@@ -8,7 +8,7 @@ except ImportError:
     gntp = None
 
 
-log = logging.getLogger('granary.integration.growler')
+log = logging.getLogger(__name__)
 
 
 if gntp is None:

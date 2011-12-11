@@ -3,7 +3,7 @@ import logging
 import wx
 
 
-log = logging.getLogger('granary.ui.taskbar')
+log = logging.getLogger(__name__)
 
 
 try:
@@ -48,7 +48,7 @@ class RssDownloaderTaskBarIcon(wx.TaskBarIcon):
         return menu
 
     def OnTaskBarClose(self, evt):
-        wx.CallAfter(self.frame.Close)
+        wx.CallAfter(wx.GetApp().DoExit)
 
     def OnTaskBarShowFeedHistory(self, evt):
         wx.CallAfter(self.frame.ShowFeedHistory)

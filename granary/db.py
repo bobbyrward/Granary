@@ -19,7 +19,7 @@ Base = declarative_base()
 Session = scoped_session(sessionmaker())
 
 
-log = logging.getLogger('granary.db')
+log = logging.getLogger(__name__)
 
 
 class Torrent(Base):

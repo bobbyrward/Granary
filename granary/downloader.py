@@ -6,7 +6,7 @@ from granary.integration.delugewebapi import DelugeWebUIClient
 from granary.configmanager import config
 
 
-log = logging.getLogger('granary.downloader')
+log = logging.getLogger(__name__)
 
 
 DELUGE_CONFIG_KEYS = [
