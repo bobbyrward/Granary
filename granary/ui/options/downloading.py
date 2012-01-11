@@ -75,6 +75,3 @@ class DownloadOptionsPanel(wx.Panel):
         config().set_key('DOWNLOAD_DIRECTORY', self.download_directory.GetValue())
         config().set_key('DELUGE_WEB_UI_URL', self.webui_url.GetValue())
         config().set_key('DELUGE_WEB_UI_PASSWORD', self.webui_password.GetValue())
-
-
-
