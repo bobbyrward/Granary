@@ -32,6 +32,7 @@ class DelugeWebUIClient(object):
     def __init__(self, endpoint):
         self.endpoint = urllib.basejoin(endpoint, '/json')
         self.headers = {}
+        self.http = httplib2.Http()
 
     def _send_request(self, method, params=None, id=None):
         if params is None:

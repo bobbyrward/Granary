@@ -102,11 +102,11 @@ TORRENT_INTEGRATION_TRANSLATION = {
 }
 
 
-def add_torrent_to_client(torrent):
+def add_torrent_to_client(name, url):
     integration_method = config().get_key('TORRENT_INTEGRATION_METHOD')
     log.debug('Torrent integration method: %s', integration_method)
 
     downloader = TORRENT_INTEGRATION_TRANSLATION[integration_method]
 
-    log.debug('Downloading %s', torrent.download_link)
-    return downloader(torrent.name + '.torrent', torrent.download_link)
+    log.debug('Downloading %s', url)
+    return downloader(name + '.torrent', url)
